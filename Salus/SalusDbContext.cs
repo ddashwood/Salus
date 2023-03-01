@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Options;
 using Salus.Models;
 using Salus.Models.Changes;
 
@@ -38,11 +40,22 @@ public class SalusDbContext : DbContext, ISalusDbContext
 
     public override int SaveChanges() => SaveChanges(acceptAllChangesOnSuccess: true);
 
+    
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         var result = _salus.SaveChanges();
         base.SaveChanges(acceptAllChangesOnSuccess);
-        return result;
+
+        if (result == null)
+        {
+            return 0;
+        }
+
+        if (Database.CurrentTransaction == null)
+        {
+            _salus.SendMessages(result);
+        }
+        return result.Changes.Count;
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
@@ -51,11 +64,18 @@ public class SalusDbContext : DbContext, ISalusDbContext
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         var result = await _salus.SaveChangesAsync(cancellationToken);
-        if (acceptAllChangesOnSuccess)
+        await base.SaveChangesAsync(acceptAllChangesOnSuccess);
+
+        if (result == null)
         {
-            ChangeTracker.AcceptAllChanges();
+            return 0;
         }
-        return result;
+
+        if (Database.CurrentTransaction == null)
+        {
+            _salus.SendMessages(result);
+        }
+        return result.Changes.Count;
     }
 
     public void Apply(Save save)

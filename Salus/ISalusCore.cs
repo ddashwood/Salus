@@ -7,11 +7,10 @@ public interface ISalusCore
 {
     void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext;
 
-    int SaveChanges();
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    Save? SaveChanges();
+    Task<Save?> SaveChangesAsync(CancellationToken cancellationToken);
     void Apply(Save save);
 
     void Check(ModelBuilder modelBuilder);
-
-
+    void SendMessages(Save save);
 }

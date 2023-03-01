@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Salus.Idempotency;
+using Salus.Messaging;
 using Salus.Saving;
 
 namespace Salus;
@@ -17,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ISalusCore, SalusCore>();
         services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
         services.AddTransient<IDbContextSaver, DbContextSaver>();
+        services.AddTransient<IMessageSender, MessageSender>();
 
         return services;
     }

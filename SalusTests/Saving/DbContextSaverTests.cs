@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Moq;
 using Newtonsoft.Json;
-using Salus;
-using Salus.Idempotency;
 using Salus.Models.Changes;
-using Salus.Saving;
 using SalusTests.TestDataStructures.Contexts;
 using SalusTests.TestDataStructures.Entities;
 
@@ -20,9 +16,7 @@ public class DbContextSaverTests
     public void AddSaveChangesTest()
     {
         // Arrange
-        var checkerMock = new Mock<IDbContextIdempotencyChecker>();
-        var saver = new DbContextSaver();
-        var salus = new SalusCore(checkerMock.Object, saver, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -57,9 +51,7 @@ public class DbContextSaverTests
     public void UpdateSaveChangesTest()
     {
         // Arrange
-        var checkerMock = new Mock<IDbContextIdempotencyChecker>();
-        var saver = new DbContextSaver();
-        var salus = new SalusCore(checkerMock.Object, saver, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -108,9 +100,7 @@ public class DbContextSaverTests
     public void DeleteSaveChangesTest()
     {
         // Arrange
-        var checkerMock = new Mock<IDbContextIdempotencyChecker>();
-        var saver = new DbContextSaver();
-        var salus = new SalusCore(checkerMock.Object, saver, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -158,9 +148,7 @@ public class DbContextSaverTests
     public void AddApplyTest()
     {
         // Arrange
-        var checkerMock = new Mock<IDbContextIdempotencyChecker>();
-        var saver = new DbContextSaver();
-        var salus = new SalusCore(checkerMock.Object, saver, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -188,9 +176,7 @@ public class DbContextSaverTests
     public void UpdateApplyTest()
     {
         // Arrange
-        var checkerMock = new Mock<IDbContextIdempotencyChecker>();
-        var saver = new DbContextSaver();
-        var salus = new SalusCore(checkerMock.Object, saver, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -236,9 +222,7 @@ public class DbContextSaverTests
     public void DeleteApplyTest()
     {
         // Arrange
-        var checkerMock = new Mock<IDbContextIdempotencyChecker>();
-        var saver = new DbContextSaver();
-        var salus = new SalusCore(checkerMock.Object, saver, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")

@@ -4,16 +4,18 @@ namespace Salus;
 
 public class SalusOptions
 {
-    public Action<Save>? Sender { get; private set; }
-    public Func<Save, Task>? SenderAsync { get; private set; }
+    public Action<string>? Sender { get; private set; }
+    public Func<string, Task>? SenderAsync { get; private set; }
 
-    public void SetMessageSender(Action<Save> sender)
+    public SalusOptions SetMessageSender(Action<string> sender)
     {
         Sender = sender;
+        return this;
     }
 
-    public void SetAsyncMessageSender(Func<Save, Task> senderAsync)
+    public SalusOptions SetAsyncMessageSender(Func<string, Task> senderAsync)
     {
         SenderAsync = senderAsync;
+        return this;
     }
 }

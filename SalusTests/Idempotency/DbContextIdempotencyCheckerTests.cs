@@ -3,6 +3,7 @@ using Moq;
 using Salus;
 using Salus.Exceptions;
 using Salus.Idempotency;
+using Salus.Messaging;
 using Salus.Saving;
 using SalusTests.TestDataStructures.Contexts;
 
@@ -10,12 +11,21 @@ namespace SalusTests.Idempotency;
 
 public class DbContextIdempotencyCheckerTests
 {
+    private SalusCore BuildSalus(SalusOptions? options = null)
+    {
+        options = options ?? new SalusOptions();
+
+        var checker = new DbContextIdempotencyChecker();
+        var saver = new DbContextSaver();
+        var messageSender = new MessageSender(options);
+        return new SalusCore(checker, saver, messageSender);
+    }
+
+
     [Fact]
     public void DatabaseGeneratedKeyAnnotationTest()
     {
-        var checker = new DbContextIdempotencyChecker();
-        var saverMock = new Mock<IDbContextSaver>();
-        var salus = new SalusCore(checker, saverMock.Object, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<DatabaseGeneratedKeyAnnotationContext>()
             .UseSqlite("Filename=:memory:")
@@ -30,9 +40,7 @@ public class DbContextIdempotencyCheckerTests
     [Fact]
     public void DatabaseGeneratedKeyFluentTest()
     {
-        var checker = new DbContextIdempotencyChecker();
-        var saverMock = new Mock<IDbContextSaver>();
-        var salus = new SalusCore(checker, saverMock.Object, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<DatabaseGeneratedKeyFluentContext>()
             .UseSqlite("Filename=:memory:")
@@ -47,9 +55,7 @@ public class DbContextIdempotencyCheckerTests
     [Fact]
     public void DatabaseGeneratedKeyImplicitTest()
     {
-        var checker = new DbContextIdempotencyChecker();
-        var saverMock = new Mock<IDbContextSaver>();
-        var salus = new SalusCore(checker, saverMock.Object, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<DatabaseGeneratedKeyImplicitContext>()
             .UseSqlite("Filename=:memory:")
@@ -64,9 +70,7 @@ public class DbContextIdempotencyCheckerTests
     [Fact]
     public void NonGeneratedKeyTest()
     {
-        var checker = new DbContextIdempotencyChecker();
-        var saverMock = new Mock<IDbContextSaver>();
-        var salus = new SalusCore(checker, saverMock.Object, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -82,9 +86,7 @@ public class DbContextIdempotencyCheckerTests
     [Fact]
     public void NoKeyTest()
     {
-        var checker = new DbContextIdempotencyChecker();
-        var saverMock = new Mock<IDbContextSaver>();
-        var salus = new SalusCore(checker, saverMock.Object, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NoKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -99,9 +101,7 @@ public class DbContextIdempotencyCheckerTests
     [Fact]
     public void NonSalusEntityTest()
     {
-        var checker = new DbContextIdempotencyChecker();
-        var saverMock = new Mock<IDbContextSaver>();
-        var salus = new SalusCore(checker, saverMock.Object, new SalusOptions());
+        var salus = Helpers.BuildTestSalus();
 
         var options = new DbContextOptionsBuilder<NonSalusEntityContext>()
             .UseSqlite("Filename=:memory:")

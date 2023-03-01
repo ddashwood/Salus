@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Salus.Idempotency;
+using Salus.Messaging;
 using Salus.Models;
 using Salus.Models.Changes;
 using Salus.Saving;
@@ -11,15 +13,22 @@ internal class SalusCore : ISalusCore
 {
     private readonly IDbContextIdempotencyChecker _idempotencyChecker;
     private readonly IDbContextSaver _saver;
+    private readonly IMessageSender _messageSender;
+
     private ISalusDbContext? _salusContext;
     private DbContext? _dbContext;
 
-    public SalusCore(IDbContextIdempotencyChecker idempotencyChecker, IDbContextSaver saver, SalusOptions options)
+    public SalusCore(
+        IDbContextIdempotencyChecker idempotencyChecker,
+        IDbContextSaver saver,
+        IMessageSender messageSender)
     {
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);
+        ArgumentNullException.ThrowIfNull(messageSender);
         _idempotencyChecker = idempotencyChecker;
         _saver = saver;
+        _messageSender = messageSender;
     }
 
     public void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext
@@ -50,25 +59,36 @@ internal class SalusCore : ISalusCore
         _saver.Apply(_dbContext, save.Changes);
     }
 
-    public int SaveChanges()
+    public Save? SaveChanges()
     {
         CheckInitialised();
         var result = _saver.SaveChanges(_dbContext);
 
         if (result == null)
         {
-            return 0;
+            return null;
         }
 
         _salusContext.SalusDataChanges.Add(new SalusUpdateEntity(result));
-        return result.Changes.Count;
+        return result;
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    public async Task<Save?> SaveChangesAsync(CancellationToken cancellationToken)
     {
         CheckInitialised();
         var result = await _saver.SaveChangesAsync(cancellationToken, _dbContext);
+
+        if (result == null)
+        {
+            return null;
+        }
+
         _salusContext.SalusDataChanges.Add(new SalusUpdateEntity(result));
-        return result.Changes.Count;
+        return result;
+    }
+
+    public void SendMessages(Save save)
+    {
+        _messageSender.Send(JsonConvert.SerializeObject(save));
     }
 }
