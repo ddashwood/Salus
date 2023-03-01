@@ -7,7 +7,7 @@ namespace Salus.Idempotency;
 
 internal class DbContextIdempotencyChecker : IDbContextIdempotencyChecker
 {
-    public void Check(ModelBuilder modelBuilder, SalusDbContext context)
+    public void Check(ModelBuilder modelBuilder, DbContext context)
     {
         var contextType = context.GetType();
 

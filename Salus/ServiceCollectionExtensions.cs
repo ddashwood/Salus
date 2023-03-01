@@ -8,9 +8,11 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSalus(this IServiceCollection services)
     {
-        services.AddScoped<ISalusCore, SalusCore>();
-        services.AddScoped<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
-        services.AddScoped<IDbContextSaver, DbContextSaver>();
+        // Salus services are all transient - this ensures that each
+        // DbContext instance gets its own Salus instance
+        services.AddTransient<ISalusCore, SalusCore>();
+        services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
+        services.AddTransient<IDbContextSaver, DbContextSaver>();
 
         return services;
     }

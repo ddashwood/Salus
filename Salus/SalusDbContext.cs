@@ -12,6 +12,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
     protected SalusDbContext(ISalusCore salus)
         : base()
     {
+        salus.Init(this);
         _salus = salus;
     }
 
@@ -19,6 +20,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
     protected SalusDbContext(ISalusCore salus, DbContextOptions options)
         : base(options)
     {
+        salus.Init(this);
         _salus = salus;
     }
 
@@ -27,7 +29,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
     protected override sealed void OnModelCreating(ModelBuilder modelBuilder)
     {
         OnSalusModelCreating(modelBuilder);
-        _salus.Check(modelBuilder, this);
+        _salus.Check(modelBuilder);
     }
 
     protected virtual void OnSalusModelCreating(ModelBuilder modelBuilder)
@@ -38,7 +40,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        var result = _salus.SaveChanges(this);
+        var result = _salus.SaveChanges();
         base.SaveChanges(acceptAllChangesOnSuccess);
         return result;
     }
@@ -48,7 +50,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        var result = await _salus.SaveChangesAsync(cancellationToken, this);
+        var result = await _salus.SaveChangesAsync(cancellationToken);
         if (acceptAllChangesOnSuccess)
         {
             ChangeTracker.AcceptAllChanges();
@@ -56,8 +58,8 @@ public class SalusDbContext : DbContext, ISalusDbContext
         return result;
     }
 
-    public void Apply(IEnumerable<Change> changes)
+    public void Apply(Save save)
     {
-        _salus.Apply(this, changes);
+        _salus.Apply(save);
     }
 }

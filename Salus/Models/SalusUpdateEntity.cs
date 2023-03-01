@@ -17,10 +17,10 @@ public class SalusUpdateEntity
     {
     }
 
-    internal SalusUpdateEntity(Change update)
+    internal SalusUpdateEntity(Save save)
     {
         Id = SequentialGuidGenerator.Instance.NewGuid().ToString();
         UpdateDateTimeUtc = DateTime.UtcNow;
-        UpdateJson = JsonConvert.SerializeObject(update);
+        UpdateJson = JsonConvert.SerializeObject(save);
     }
 }

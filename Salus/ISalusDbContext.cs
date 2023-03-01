@@ -8,5 +8,5 @@ public interface ISalusDbContext
 {
     DbSet<SalusUpdateEntity> SalusDataChanges { get; }
 
-    void Apply(IEnumerable<Change> changes);
+    void Apply(Save save);
 }

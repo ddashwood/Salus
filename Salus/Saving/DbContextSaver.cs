@@ -14,16 +14,16 @@ public class DbContextSaver : IDbContextSaver
     // change of the data, not when it is updated elsewhere
     private bool _applying;
 
-    public int SaveChanges<TContext>(TContext context) where TContext : DbContext, ISalusDbContext
+    public Save? SaveChanges(DbContext context)
     {
         if (_applying)
         {
-            return 0;
+            return null;
         }
 
         context.ChangeTracker.DetectChanges();
 
-        int count = 0;
+        List<Change> changes = new();
 
         var changeTrackerEntries = context.ChangeTracker.Entries().ToList();
         foreach (var entry in changeTrackerEntries)
@@ -41,8 +41,7 @@ public class DbContextSaver : IDbContextSaver
 
             if (change != null)
             {
-                count++;
-                context.SalusDataChanges.Add(new SalusUpdateEntity(change));
+                changes.Add(change);
             }
         }
 
@@ -57,10 +56,10 @@ public class DbContextSaver : IDbContextSaver
         // If we *are* in a transaction, we can't publish the message yet.
         // We should probably do that when the transaction has been commited.
 
-        return count;
+        return new Save(changes);
     }
 
-    public Task<int> SaveChangesAsync<TContext>(CancellationToken cancellationToken, TContext context) where TContext : DbContext, ISalusDbContext
+    public Task<Save> SaveChangesAsync(CancellationToken cancellationToken, DbContext context)
     {
         throw new NotImplementedException();
     }

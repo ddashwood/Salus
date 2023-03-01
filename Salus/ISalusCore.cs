@@ -5,11 +5,13 @@ namespace Salus;
 
 public interface ISalusCore
 {
-    int SaveChanges<TContext>(TContext context) where TContext : DbContext, ISalusDbContext;
-    Task<int> SaveChangesAsync<TContext>(CancellationToken cancellationToken, TContext context) where TContext : DbContext, ISalusDbContext;
-    void Apply(DbContext context, IEnumerable<Change> changes);
+    void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext;
 
-    void Check(ModelBuilder modelBuilder, SalusDbContext context);
+    int SaveChanges();
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    void Apply(Save save);
+
+    void Check(ModelBuilder modelBuilder);
 
 
 }

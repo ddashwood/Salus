@@ -12,9 +12,9 @@ namespace SalusTests.Saving;
 
 public class DbContextSaverTests
 {
-    private const string ADD_JSON = """{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}""";
-    private const string UPDATE_JSON = """{"ChangeType":1,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}""";
-    private const string DELETE_JSON = """{"ChangeType":2,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":null,"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}""";
+    private const string ADD_JSON = """{"Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}]}""";
+    private const string UPDATE_JSON = """{"Changes":[{"ChangeType":1,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
+    private const string DELETE_JSON = """{"Changes":[{"ChangeType":2,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":null,"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
 
     [Fact]
     public void AddSaveChangesTest()
@@ -173,8 +173,8 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
 
         // Act
-        var change = JsonConvert.DeserializeObject<Change>(ADD_JSON)!;
-        context.Apply(new List<Change> { change });
+        var save= JsonConvert.DeserializeObject<Save>(ADD_JSON)!;
+        context.Apply(save);
 
         // Assert
         Assert.Equal(1, context.Ents.Count());
@@ -221,8 +221,8 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
 
         // Act
-        var change = JsonConvert.DeserializeObject<Change>(UPDATE_JSON)!;
-        context.Apply(new List<Change> { change });
+        var save = JsonConvert.DeserializeObject<Save>(UPDATE_JSON)!;
+        context.Apply(save);
 
         // Assert
         Assert.Equal(3, context.Ents.Count());
@@ -269,8 +269,8 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
 
         // Act
-        var change = JsonConvert.DeserializeObject<Change>(DELETE_JSON)!;
-        context.Apply(new List<Change> { change });
+        var save = JsonConvert.DeserializeObject<Save>(DELETE_JSON)!;
+        context.Apply(save);
 
         // Assert
         Assert.Equal(2, context.Ents.Count());

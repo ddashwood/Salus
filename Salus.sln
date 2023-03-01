@@ -5,9 +5,17 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Salus", "Salus\Salus.csproj", "{D0380BDF-B9EA-4952-A349-16A23A3C0C96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalusExampleParent", "SalusExampleParent\SalusExampleParent.csproj", "{AC83A659-A6DD-4277-B47C-FDF163D95A32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SalusExampleParent", "SalusExampleParent\SalusExampleParent.csproj", "{AC83A659-A6DD-4277-B47C-FDF163D95A32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalusTests", "SalusTests\SalusTests.csproj", "{CBF4C0FE-21BA-455E-BBA1-1FF9F7EF2E46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SalusTests", "SalusTests\SalusTests.csproj", "{CBF4C0FE-21BA-455E-BBA1-1FF9F7EF2E46}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DA2B6322-6181-4BD1-9ACA-D727BB20DBBC}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,5 +4,5 @@ namespace Salus.Idempotency;
 
 public interface IDbContextIdempotencyChecker
 {
-    void Check(ModelBuilder modelBuilder, SalusDbContext context);
+    void Check(ModelBuilder modelBuilder, DbContext context);
 }
