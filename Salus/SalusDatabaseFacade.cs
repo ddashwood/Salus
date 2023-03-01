@@ -5,16 +5,15 @@ using Salus.Models.Changes;
 
 namespace Salus;
 
-public class SalusDatabaseFacade : DatabaseFacade, ISalusTransactionSaver
+public class SalusDatabaseFacade : DatabaseFacade
 {
     private readonly DatabaseFacade _wrappedFacade;
-    private readonly List<Save> _transactionSaves;
     private readonly ISalusCore _salus;
+    private SalusDbContextTransaction? _currentTransaction;
 
     public SalusDatabaseFacade(DatabaseFacade wrappedFacade, DbContext context, ISalusCore salus) : base(context)
     {
         _wrappedFacade = wrappedFacade;
-        _transactionSaves = new List<Save>();
         _salus = salus;
     }
 
@@ -25,12 +24,13 @@ public class SalusDatabaseFacade : DatabaseFacade, ISalusTransactionSaver
     public override IDbContextTransaction BeginTransaction()
     {
         var tran = _wrappedFacade.BeginTransaction();
-        return new SalusDbContextTransaction(tran, this);
+        _currentTransaction = new SalusDbContextTransaction(tran, _salus);
+        return _currentTransaction;
     }
     public override async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         var tran = await _wrappedFacade.BeginTransactionAsync(cancellationToken);
-        return new SalusDbContextTransaction(tran, this);
+        return new SalusDbContextTransaction(tran, _salus);
     }
     public override bool CanConnect()
     {
@@ -43,16 +43,33 @@ public class SalusDatabaseFacade : DatabaseFacade, ISalusTransactionSaver
     public override void CommitTransaction()
     {
         _wrappedFacade.CommitTransaction();
+        OnCommitting();
     }
-    public override Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    public override async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        return _wrappedFacade.CommitTransactionAsync(cancellationToken);
+        await _wrappedFacade.CommitTransactionAsync(cancellationToken);
+        await OnCommittingAsync();
     }
     public override IExecutionStrategy CreateExecutionStrategy()
     {
         return _wrappedFacade.CreateExecutionStrategy();
     }
-    public override IDbContextTransaction? CurrentTransaction => _wrappedFacade.CurrentTransaction;
+    public override IDbContextTransaction? CurrentTransaction
+    {
+        get
+        {
+            if (base.CurrentTransaction == null)
+            {
+                _currentTransaction = null;
+                return null;
+            }
+            if (_currentTransaction == null)
+            {
+                return base.CurrentTransaction;
+            }
+            return _currentTransaction;
+        }
+    }
     public override bool EnsureCreated()
     {
         return _wrappedFacade.EnsureCreated();
@@ -83,10 +100,10 @@ public class SalusDatabaseFacade : DatabaseFacade, ISalusTransactionSaver
         OnRollingBack();
         _wrappedFacade.RollbackTransaction();
     }
-    public override Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    public override async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
         OnRollingBack();
-        return _wrappedFacade.RollbackTransactionAsync(cancellationToken);
+        await _wrappedFacade.RollbackTransactionAsync(cancellationToken);
     }
     public override string ToString()
     {
@@ -95,23 +112,40 @@ public class SalusDatabaseFacade : DatabaseFacade, ISalusTransactionSaver
 
     public void AddTransactionSave(Save save)
     {
-        _transactionSaves.Add(save);
-    }
-
-    public void OnCommitting()
-    {
-        foreach (var save in _transactionSaves)
+        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
         {
-            _salus.SendMessages(save);
+            salusTransaction.AddTransactionSave(save);
+        }
+        else if (CurrentTransaction == null)
+        {
+            throw new InvalidOperationException("Attempt to add to transaction saves without a current transaction");
+        }
+        else
+        {
+            throw new InvalidOperationException("Attempt to add to transactions saves but the current transaction does not support this");
         }
     }
 
-    public Task OnCommittingAsync()
+    private void OnCommitting()
     {
-        throw new NotImplementedException();
+        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        {
+            salusTransaction.OnCommitting();
+        }
     }
-    public void OnRollingBack()
+
+    private async Task OnCommittingAsync()
     {
-        _transactionSaves.Clear();
+        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        {
+            await salusTransaction.OnCommittingAsync();
+        }
+    }
+    private void OnRollingBack()
+    {
+        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        {
+            salusTransaction.OnRollingBack();
+        }
     }
 }
