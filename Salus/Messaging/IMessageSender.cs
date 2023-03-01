@@ -1,6 +1,6 @@
 ﻿namespace Salus.Messaging;
 
-public interface IMessageSender
+internal interface IMessageSender
 {
     void Send(string message);
 }

@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
         // Salus services are mostly transient - this ensures that each
         // DbContext instance gets its own Salus instance
         services.AddSingleton(optionsObject);
-        services.AddTransient<ISalusCore, SalusCore>();
+        services.AddTransient<ISalus, SalusCore>();
         services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
         services.AddTransient<IDbContextSaver, DbContextSaver>();
         services.AddTransient<IMessageSender, MessageSender>();

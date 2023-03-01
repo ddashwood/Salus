@@ -7,7 +7,7 @@ namespace SalusTests.TestDataStructures.Contexts;
 internal class DatabaseGeneratedKeyAnnotationContext : SalusDbContext
 {
     public DatabaseGeneratedKeyAnnotationContext(
-        ISalusCore salus,
+        ISalus salus,
         DbContextOptions<DatabaseGeneratedKeyAnnotationContext> options
     )
         : base(salus, options)

@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Salus;
 
-internal class SalusCore : ISalusCore
+internal class SalusCore : ISalus, ISalusCore
 {
     private readonly IDbContextIdempotencyChecker _idempotencyChecker;
     private readonly IDbContextSaver _saver;

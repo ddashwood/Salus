@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Salus.Models.Changes;
-using SequentialGuid;
 using System.ComponentModel.DataAnnotations;
 
 namespace Salus.Models;

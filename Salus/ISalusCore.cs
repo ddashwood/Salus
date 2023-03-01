@@ -3,7 +3,7 @@ using Salus.Models.Changes;
 
 namespace Salus;
 
-public interface ISalusCore
+internal interface ISalusCore
 {
     void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext;
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Options;
 using Salus.Models;
 using Salus.Models.Changes;
 
@@ -13,19 +12,19 @@ public class SalusDbContext : DbContext, ISalusDbContext
 
 
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
-    protected SalusDbContext(ISalusCore salus)
+    protected SalusDbContext(ISalus salus)
         : base()
     {
-        salus.Init(this);
-        _salus = salus;
+        _salus = (ISalusCore)salus;
+        _salus.Init(this);
     }
 
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
-    protected SalusDbContext(ISalusCore salus, DbContextOptions options)
+    protected SalusDbContext(ISalus salus, DbContextOptions options)
         : base(options)
     {
-        salus.Init(this);
-        _salus = salus;
+        _salus = (ISalusCore)salus;
+        _salus.Init(this);
     }
 
     public DbSet<SalusUpdateEntity> SalusDataChanges => Set<SalusUpdateEntity>();
@@ -59,8 +58,8 @@ public class SalusDbContext : DbContext, ISalusDbContext
         }
         else
         {
-            var database = Database;
-            database.AddTransactionSave(result);
+            _ = Database; // Force initialisation of the lazy property
+            _database!.AddTransactionSave(result);
         }
         return result.Changes.Count;
     }
@@ -84,18 +83,18 @@ public class SalusDbContext : DbContext, ISalusDbContext
         }
         else
         {
-            var database = Database;
-            database.AddTransactionSave(result);
+            _ = Database; // Force initialisation of the lazy property
+            _database!.AddTransactionSave(result);
         }
         return result.Changes.Count;
     }
 
-    public void Apply(Save save)
+    internal void Apply(Save save)
     {
         _salus.Apply(save);
     }
 
-    public override SalusDatabaseFacade Database
+    public override DatabaseFacade Database
     {
         get
         {

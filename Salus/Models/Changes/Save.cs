@@ -3,7 +3,7 @@ using SequentialGuid;
 
 namespace Salus.Models.Changes;
 
-public class Save
+internal class Save
 {
     [JsonIgnore]
     public string Id { get; }

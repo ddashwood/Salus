@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Salus.Models.Changes;
 
-public class Change
+internal class Change
 {
     public enum ChangeTypeEnum
     {

@@ -7,7 +7,7 @@ namespace SalusTests.TestDataStructures.Contexts;
 internal class DatabaseGeneratedKeyFluentContext : SalusDbContext
 {
     public DatabaseGeneratedKeyFluentContext(
-        ISalusCore salus,
+        ISalus salus,
         DbContextOptions<DatabaseGeneratedKeyFluentContext> options
     )
         : base(salus, options)

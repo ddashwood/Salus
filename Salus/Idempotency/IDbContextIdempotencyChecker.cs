@@ -2,7 +2,7 @@
 
 namespace Salus.Idempotency;
 
-public interface IDbContextIdempotencyChecker
+internal interface IDbContextIdempotencyChecker
 {
     void Check(ModelBuilder modelBuilder, DbContext context);
 }

@@ -3,7 +3,7 @@ using Salus.Models.Changes;
 
 namespace Salus;
 
-public class SalusDbContextTransaction : IDbContextTransaction
+internal class SalusDbContextTransaction : IDbContextTransaction
 {
     private readonly IDbContextTransaction _wrappedTransaction;
     private readonly ISalusCore _salus;

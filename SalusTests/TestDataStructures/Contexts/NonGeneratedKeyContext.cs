@@ -7,7 +7,7 @@ namespace SalusTests.TestDataStructures.Contexts;
 internal class NonGeneratedKeyContext : SalusDbContext
 {
     public NonGeneratedKeyContext(
-        ISalusCore salus,
+        ISalus salus,
         DbContextOptions<NonGeneratedKeyContext> options
     )
         : base(salus, options)

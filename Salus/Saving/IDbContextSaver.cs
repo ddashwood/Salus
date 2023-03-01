@@ -3,7 +3,7 @@ using Salus.Models.Changes;
 
 namespace Salus.Saving;
 
-public interface IDbContextSaver
+internal interface IDbContextSaver
 {
     Save? SaveChanges(DbContext context);
     Task<Save> SaveChangesAsync(CancellationToken cancellationToken, DbContext context);

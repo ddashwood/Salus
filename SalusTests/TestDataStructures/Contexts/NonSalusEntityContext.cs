@@ -7,7 +7,7 @@ namespace SalusTests.TestDataStructures.Contexts;
 internal class NonSalusEntityContext : SalusDbContext
 {
     public NonSalusEntityContext(
-        ISalusCore salus,
+        ISalus salus,
         DbContextOptions<NonSalusEntityContext> options
     )
         : base(salus, options)

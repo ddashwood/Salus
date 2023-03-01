@@ -1,6 +1,4 @@
-﻿using Salus.Models.Changes;
-
-namespace Salus;
+﻿namespace Salus;
 
 public class SalusOptions
 {

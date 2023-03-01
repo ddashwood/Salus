@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Salus.Saving;
 
-public class DbContextSaver : IDbContextSaver
+internal class DbContextSaver : IDbContextSaver
 {
     // When applying changes from a collection of Change objects, we need to ensure that we
     // don't add those changes into the SalusDataChanges table in the database - the changes have

@@ -5,7 +5,7 @@ using Salus.Models.Changes;
 
 namespace Salus;
 
-public class SalusDatabaseFacade : DatabaseFacade
+internal class SalusDatabaseFacade : DatabaseFacade
 {
     private readonly DatabaseFacade _wrappedFacade;
     private readonly ISalusCore _salus;

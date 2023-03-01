@@ -7,7 +7,7 @@ namespace SalusTests.TestDataStructures.Contexts;
 internal class NoKeyContext : SalusDbContext
 {
     public NoKeyContext(
-        ISalusCore salus,
+        ISalus salus,
         DbContextOptions<NoKeyContext> options
     )
         : base(salus, options)
