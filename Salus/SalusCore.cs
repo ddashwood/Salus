@@ -33,8 +33,8 @@ internal class SalusCore : ISalusCore
     [MemberNotNull(nameof(_salusContext), nameof(_dbContext))]
     private void CheckInitialised()
     {
-        var _1 = _dbContext ?? throw new InvalidOperationException("Salus Core is not initialised");
-        var _2 = _salusContext ?? throw new InvalidOperationException("Salus Core is not initialised");
+        _ = _dbContext ?? throw new InvalidOperationException("Salus Core is not initialised");
+        _ = _salusContext ?? throw new InvalidOperationException("Salus Core is not initialised");
     }
 
     public void Check(ModelBuilder modelBuilder)
