@@ -24,9 +24,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        context.Database.OpenConnection();
-        context.Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) PRIMARY KEY, Name VARCHAR(1000))");
-        context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
+        Helpers.CreateDatabaseTables(context);
 
         // Act
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
@@ -59,9 +57,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        context.Database.OpenConnection();
-        context.Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) PRIMARY KEY, Name VARCHAR(1000))");
-        context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
+        Helpers.CreateDatabaseTables(context);
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
@@ -108,9 +104,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        context.Database.OpenConnection();
-        context.Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) PRIMARY KEY, Name VARCHAR(1000))");
-        context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
+        Helpers.CreateDatabaseTables(context);
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
@@ -156,12 +150,10 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        context.Database.OpenConnection();
-        context.Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) PRIMARY KEY, Name VARCHAR(1000))");
-        context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
+        Helpers.CreateDatabaseTables(context);
 
         // Act
-        var save= JsonConvert.DeserializeObject<Save>(ADD_JSON)!;
+        var save = JsonConvert.DeserializeObject<Save>(ADD_JSON)!;
         context.Apply(save);
 
         // Assert
@@ -184,9 +176,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        context.Database.OpenConnection();
-        context.Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) PRIMARY KEY, Name VARCHAR(1000))");
-        context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
+        Helpers.CreateDatabaseTables(context);
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
@@ -230,9 +220,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        context.Database.OpenConnection();
-        context.Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) PRIMARY KEY, Name VARCHAR(1000))");
-        context.Database.ExecuteSql($"CREATE TABLE SalusDataChanges (Id VARCHAR(1000) PRIMARY KEY, UpdateDateTimeUtc VARCHAR(1000), UpdateJson VARCHAR(10000))");
+        Helpers.CreateDatabaseTables(context);
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
