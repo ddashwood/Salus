@@ -117,7 +117,7 @@ public class MessagingTests
     }
 
     [Fact]
-    public void MessageWithFailedWriteTest()
+    public void MessageWithFailedMessageSendTest()
     {
         // Arrange
         var salus = Helpers.BuildTestSalus(new SalusOptions()
