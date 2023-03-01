@@ -93,6 +93,23 @@ internal class SalusCore : ISalus, ISalusCore
 
     public void SendMessages(Save save)
     {
-        _messageSender.Send(JsonConvert.SerializeObject(save));
+        CheckInitialised();
+
+        try
+        {
+            _messageSender.Send(JsonConvert.SerializeObject(save));
+
+            var saveEntity = _salusContext.SalusDataChanges.SingleOrDefault(s => s.Id == save.Id);
+            if (saveEntity != null)
+            {
+                saveEntity.CompletedDateTimeUtc = DateTime.UtcNow;
+                // _dbContext and _salusContext point to the same context object
+                _dbContext.SaveChanges();
+            }
+        }
+        catch(Exception ex)
+        {
+
+        }
     }
 }

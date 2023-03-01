@@ -42,8 +42,8 @@ public class MessagingTests
         var result = context.SaveChanges();
 
         // Assert
-
         mockSender.Verify(m => m.Send(ADD_JSON), Times.Once);
+        Assert.NotNull(context.SalusDataChanges.Single().CompletedDateTimeUtc);
     }
 
     [Fact]
@@ -64,7 +64,6 @@ public class MessagingTests
         Helpers.CreateDatabaseTables(context);
 
         // Act
-
         using (var tran = context.Database.BeginTransaction())
         {
             context.Ents.Add(new NoKeyAnnotationStringIdEntity
@@ -77,8 +76,8 @@ public class MessagingTests
         }
 
         // Assert
-
         mockSender.Verify(m => m.Send(It.IsAny<string>()), Times.Never);
+        Assert.Equal(0, context.SalusDataChanges.Count());
     }
 
     [Fact]
@@ -99,7 +98,6 @@ public class MessagingTests
         Helpers.CreateDatabaseTables(context);
         
         // Act
-
         using (var tran = context.Database.BeginTransaction())
         {
             context.Ents.Add(new NoKeyAnnotationStringIdEntity
@@ -114,8 +112,35 @@ public class MessagingTests
         }
 
         // Assert
-
         mockSender.Verify(m => m.Send(ADD_JSON), Times.Once);
+        Assert.NotNull(context.SalusDataChanges.Single().CompletedDateTimeUtc);
     }
 
+    [Fact]
+    public void MessageWithFailedWriteTest()
+    {
+        // Arrange
+        var salus = Helpers.BuildTestSalus(new SalusOptions()
+            .SetMessageSender(_ => throw new Exception()));
+
+        var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new NonGeneratedKeyContext(salus, dbOptions);
+
+        Helpers.CreateDatabaseTables(context);
+
+        // Act
+        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        {
+            Id = "Test ID",
+            Name = "Test Name"
+        });
+
+        var result = context.SaveChanges();
+
+        // Assert
+        Assert.Null(context.SalusDataChanges.Single().CompletedDateTimeUtc);
+    }
 }

@@ -28,6 +28,19 @@ internal class DbContextSaver : IDbContextSaver
         var changeTrackerEntries = context.ChangeTracker.Entries().ToList();
         foreach (var entry in changeTrackerEntries)
         {
+            var dbSet = context.GetType()
+                .GetProperties()
+                .SingleOrDefault(p => p.PropertyType == typeof(DbSet<>).MakeGenericType(entry.Entity.GetType()));
+
+            if (dbSet == null)
+            {
+                continue;
+            }
+            if (dbSet.GetCustomAttribute(typeof(SalusDbSetAttribute)) == null)
+            {
+                continue;
+            }
+
             Change? change = null;
 
             switch (entry.State)
@@ -45,16 +58,10 @@ internal class DbContextSaver : IDbContextSaver
             }
         }
 
-
-        // TO DO - handle messaging and resilliance
-
-        // If *not* in a transaction, then SaveChanges acts as a transaction
-        // In this case, we can SaveChanges, then publish to the message system.
-        // After that, we can update SalusDataChanges to show the change is
-        // complete.
-        //
-        // If we *are* in a transaction, we can't publish the message yet.
-        // We should probably do that when the transaction has been commited.
+        if (changes.Count == 0)
+        {
+            return null;
+        }
 
         return new Save(changes);
     }
