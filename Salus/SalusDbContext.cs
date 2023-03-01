@@ -9,6 +9,8 @@ namespace Salus;
 public class SalusDbContext : DbContext, ISalusDbContext
 {
     private readonly ISalusCore _salus;
+    private SalusDatabaseFacade? _database;
+
 
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
     protected SalusDbContext(ISalusCore salus)
@@ -55,6 +57,11 @@ public class SalusDbContext : DbContext, ISalusDbContext
         {
             _salus.SendMessages(result);
         }
+        else
+        {
+            var database = Database;
+            database.AddTransactionSave(result);
+        }
         return result.Changes.Count;
     }
 
@@ -75,11 +82,28 @@ public class SalusDbContext : DbContext, ISalusDbContext
         {
             _salus.SendMessages(result);
         }
+        else
+        {
+            var database = Database;
+            database.AddTransactionSave(result);
+        }
         return result.Changes.Count;
     }
 
     public void Apply(Save save)
     {
         _salus.Apply(save);
+    }
+
+    public override SalusDatabaseFacade Database
+    {
+        get
+        {
+            if (_database == null)
+            {
+                _database = new SalusDatabaseFacade(base.Database, this, _salus);
+            }
+            return _database;
+        }
     }
 }

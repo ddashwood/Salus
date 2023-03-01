@@ -13,4 +13,5 @@ public interface ISalusCore
 
     void Check(ModelBuilder modelBuilder);
     void SendMessages(Save save);
+    SalusOptions Options { get; }
 }

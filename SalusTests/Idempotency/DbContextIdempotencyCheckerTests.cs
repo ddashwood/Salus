@@ -1,27 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Moq;
-using Salus;
 using Salus.Exceptions;
-using Salus.Idempotency;
-using Salus.Messaging;
-using Salus.Saving;
 using SalusTests.TestDataStructures.Contexts;
 
 namespace SalusTests.Idempotency;
 
 public class DbContextIdempotencyCheckerTests
 {
-    private SalusCore BuildSalus(SalusOptions? options = null)
-    {
-        options = options ?? new SalusOptions();
-
-        var checker = new DbContextIdempotencyChecker();
-        var saver = new DbContextSaver();
-        var messageSender = new MessageSender(options);
-        return new SalusCore(checker, saver, messageSender);
-    }
-
-
     [Fact]
     public void DatabaseGeneratedKeyAnnotationTest()
     {

@@ -17,11 +17,14 @@ internal class SalusCore : ISalusCore
 
     private ISalusDbContext? _salusContext;
     private DbContext? _dbContext;
+    
+    public SalusOptions Options { get; }
 
     public SalusCore(
         IDbContextIdempotencyChecker idempotencyChecker,
         IDbContextSaver saver,
-        IMessageSender messageSender)
+        IMessageSender messageSender,
+        SalusOptions? options)
     {
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);
@@ -29,6 +32,7 @@ internal class SalusCore : ISalusCore
         _idempotencyChecker = idempotencyChecker;
         _saver = saver;
         _messageSender = messageSender;
+        Options = options ?? new SalusOptions();
     }
 
     public void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext

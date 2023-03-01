@@ -14,6 +14,6 @@ internal static class Helpers
         var checker = new DbContextIdempotencyChecker();
         var saver = new DbContextSaver();
         var messageSender = new MessageSender(options);
-        return new SalusCore(checker, saver, messageSender);
+        return new SalusCore(checker, saver, messageSender, new SalusOptions());
     }
 }
