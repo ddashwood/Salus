@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Salus;
 using SalusExampleParent;
@@ -8,8 +9,13 @@ using IHost host = Host.CreateDefaultBuilder()
     {
         services.AddSalus();
         services.AddSingleton<ExampleParent>();
+        services.AddDbContext<ExampleDbContext>(options =>
+        {
+            options.UseSqlite("Filename=:memory:");
+        });
     })
     .Build();
 
-var app = host.Services.GetRequiredService<ExampleParent>();
+using var scope = host.Services.CreateScope();
+var app = scope.ServiceProvider.GetRequiredService<ExampleParent>();
 app.Run();

@@ -8,7 +8,7 @@ internal class NonSalusEntityContext : SalusDbContext
 {
     public NonSalusEntityContext(
         ISalusCore salus,
-        DbContextOptions options
+        DbContextOptions<NonSalusEntityContext> options
     )
         : base(salus, options)
     {

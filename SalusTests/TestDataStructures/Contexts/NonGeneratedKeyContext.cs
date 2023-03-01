@@ -8,7 +8,7 @@ internal class NonGeneratedKeyContext : SalusDbContext
 {
     public NonGeneratedKeyContext(
         ISalusCore salus,
-        DbContextOptions options
+        DbContextOptions<NonGeneratedKeyContext> options
     )
         : base(salus, options)
     {

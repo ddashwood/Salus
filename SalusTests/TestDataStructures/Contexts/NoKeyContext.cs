@@ -8,7 +8,7 @@ internal class NoKeyContext : SalusDbContext
 {
     public NoKeyContext(
         ISalusCore salus,
-        DbContextOptions options
+        DbContextOptions<NoKeyContext> options
     )
         : base(salus, options)
     {

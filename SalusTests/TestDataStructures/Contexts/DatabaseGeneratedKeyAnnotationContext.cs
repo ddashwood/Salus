@@ -8,7 +8,7 @@ internal class DatabaseGeneratedKeyAnnotationContext : SalusDbContext
 {
     public DatabaseGeneratedKeyAnnotationContext(
         ISalusCore salus,
-        DbContextOptions options
+        DbContextOptions<DatabaseGeneratedKeyAnnotationContext> options
     )
         : base(salus, options)
     {

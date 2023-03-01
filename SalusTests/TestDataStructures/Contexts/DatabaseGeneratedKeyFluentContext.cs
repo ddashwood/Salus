@@ -8,7 +8,7 @@ internal class DatabaseGeneratedKeyFluentContext : SalusDbContext
 {
     public DatabaseGeneratedKeyFluentContext(
         ISalusCore salus,
-        DbContextOptions options
+        DbContextOptions<DatabaseGeneratedKeyFluentContext> options
     )
         : base(salus, options)
     {
