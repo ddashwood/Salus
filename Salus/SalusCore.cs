@@ -14,8 +14,7 @@ internal class SalusCore : ISalusCore
     private ISalusDbContext? _salusContext;
     private DbContext? _dbContext;
 
-    public SalusCore(IDbContextIdempotencyChecker idempotencyChecker, IDbContextSaver saver)
-        : base()
+    public SalusCore(IDbContextIdempotencyChecker idempotencyChecker, IDbContextSaver saver, SalusOptions options)
     {
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);

@@ -6,10 +6,14 @@ namespace Salus;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddSalus(this IServiceCollection services)
+    public static IServiceCollection AddSalus(this IServiceCollection services, Action<SalusOptions> options)
     {
-        // Salus services are all transient - this ensures that each
+        var optionsObject = new SalusOptions();
+        options(optionsObject);
+
+        // Salus services are mostly transient - this ensures that each
         // DbContext instance gets its own Salus instance
+        services.AddSingleton(optionsObject);
         services.AddTransient<ISalusCore, SalusCore>();
         services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
         services.AddTransient<IDbContextSaver, DbContextSaver>();
