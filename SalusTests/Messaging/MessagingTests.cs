@@ -43,7 +43,10 @@ public class MessagingTests
 
         // Assert
         mockSender.Verify(m => m.Send(ADD_JSON), Times.Once);
-        Assert.NotNull(context.SalusDataChanges.Single().CompletedDateTimeUtc);
+        var change = context.SalusDataChanges.Single();
+        Assert.NotNull(change.CompletedDateTimeUtc);
+        Assert.Equal(0, change.FailedMessageSendAttempts);
+        Assert.Null(change.LastFailedMessageSendAttemptUtc);
     }
 
     [Fact]
@@ -114,6 +117,10 @@ public class MessagingTests
         // Assert
         mockSender.Verify(m => m.Send(ADD_JSON), Times.Once);
         Assert.NotNull(context.SalusDataChanges.Single().CompletedDateTimeUtc);
+        var change = context.SalusDataChanges.Single();
+        Assert.NotNull(change.CompletedDateTimeUtc);
+        Assert.Equal(0, change.FailedMessageSendAttempts);
+        Assert.Null(change.LastFailedMessageSendAttemptUtc);
     }
 
     [Fact]
@@ -142,5 +149,9 @@ public class MessagingTests
 
         // Assert
         Assert.Null(context.SalusDataChanges.Single().CompletedDateTimeUtc);
+        var change = context.SalusDataChanges.Single();
+        Assert.Null(change.CompletedDateTimeUtc);
+        Assert.Equal(1, change.FailedMessageSendAttempts);
+        Assert.NotNull(change.LastFailedMessageSendAttemptUtc);
     }
 }
