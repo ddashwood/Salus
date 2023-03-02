@@ -44,8 +44,22 @@ public class SalusDbContext : DbContext, ISalusDbContext
     
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        // TO DO - This needs to not actually gather the data, because some of the data
+        // is only available after SaveChanges. It needs to make a note of all entities
+        // and their states
         var result = _salus.SaveChanges();
+
+
         base.SaveChanges(acceptAllChangesOnSuccess);
+
+
+        // TO DO - Now we can re-visit that list of changes, gather the data, and
+        // write it to the database with a separate SaveChanges
+
+        // TO DO - The separate SaveChanges above needs to be wrapped in a transaction
+        // with the previous SaveChanges, unless we are already in a transaction
+
+
 
         if (result == null)
         {
@@ -58,8 +72,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
         }
         else
         {
-            _ = Database; // Force initialisation of the lazy property
-            _database!.AddTransactionSave(result);
+            SalusDatabase.AddTransactionSave(result);
         }
         return result.Changes.Count;
     }
@@ -67,26 +80,27 @@ public class SalusDbContext : DbContext, ISalusDbContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         await SaveChangesAsync(true, cancellationToken);
 
-    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        var result = await _salus.SaveChangesAsync(cancellationToken);
-        await base.SaveChangesAsync(acceptAllChangesOnSuccess);
+        throw new NotImplementedException();
 
-        if (result == null)
-        {
-            return 0;
-        }
+        //var result = await _salus.SaveChangesAsync(cancellationToken);
+        //await base.SaveChangesAsync(acceptAllChangesOnSuccess);
 
-        if (Database.CurrentTransaction == null)
-        {
-            _salus.SendMessages(result);
-        }
-        else
-        {
-            _ = Database; // Force initialisation of the lazy property
-            _database!.AddTransactionSave(result);
-        }
-        return result.Changes.Count;
+        //if (result == null)
+        //{
+        //    return 0;
+        //}
+
+        //if (Database.CurrentTransaction == null)
+        //{
+        //    _salus.SendMessages(result);
+        //}
+        //else
+        //{
+        //    SalusDatabase.AddTransactionSave(result);
+        //}
+        //return result.Changes.Count;
     }
 
     internal void Apply(Save save)
@@ -94,7 +108,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
         _salus.Apply(save);
     }
 
-    public override DatabaseFacade Database
+    private SalusDatabaseFacade SalusDatabase
     {
         get
         {
@@ -105,4 +119,6 @@ public class SalusDbContext : DbContext, ISalusDbContext
             return _database;
         }
     }
+
+    public override DatabaseFacade Database => SalusDatabase;
 }
