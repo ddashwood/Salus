@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Salus.Models.Changes;
-using System.Threading;
 
 namespace Salus;
 

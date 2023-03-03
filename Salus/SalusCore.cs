@@ -8,7 +8,6 @@ using Salus.Models;
 using Salus.Models.Changes;
 using Salus.Saving;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
 namespace Salus;
 
