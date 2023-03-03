@@ -12,6 +12,7 @@ public class SalusUpdateEntity
     public DateTime? CompletedDateTimeUtc { get; set; }
     public int FailedMessageSendAttempts { get; set; }
     public DateTime? LastFailedMessageSendAttemptUtc { get; set; }
+    public DateTime? NextMessageSendAttemptUtc { get; set; }
     public string UpdateJson { get; private set; } = string.Empty;
 
     // For Entity Framework

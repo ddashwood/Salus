@@ -8,18 +8,28 @@ using SalusExampleParent;
 using IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
-        services.AddSalus(options =>
+        services.AddSalus<ExampleDbContext>(options =>
         {
             options.SetMessageSender(message => Console.WriteLine("Sending: " + JsonConvert.SerializeObject(message)));
         });
-        services.AddSingleton<ExampleParent>();
+        services.AddScoped<ExampleParent>();
         services.AddDbContext<ExampleDbContext>(options =>
         {
-            options.UseSqlite("Filename=:memory:");
+            options.UseSqlite("Data Source=Application.db");
         });
     })
     .Build();
 
 using var scope = host.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<ExampleDbContext>();
+context.Database.OpenConnection();
+context.Database.Migrate();
+
+await host.StartAsync();
+
 var app = scope.ServiceProvider.GetRequiredService<ExampleParent>();
-app.Run();
+await app.Run();
+
+var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.StopApplication();
+await host.WaitForShutdownAsync();

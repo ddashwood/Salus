@@ -13,7 +13,7 @@ internal interface ISalusCore
 
     void Apply(Save save);
 
-    void Check(ModelBuilder modelBuilder);
+    void OnModelCreating(ModelBuilder modelBuilder);
     
     void SendMessages(Save save);
     Task SendMessageAsync(Save save);

@@ -54,7 +54,17 @@ internal class SalusCore : ISalus, ISalusCore
         _ = _salusContext ?? throw new InvalidOperationException("Salus Core is not initialised");
     }
 
-    public void Check(ModelBuilder modelBuilder)
+    public void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SalusUpdateEntity>(e =>
+        {
+            e.HasIndex(u => new { u.CompletedDateTimeUtc, u.FailedMessageSendAttempts });
+        });
+
+        Check(modelBuilder);
+    }
+
+    private void Check(ModelBuilder modelBuilder)
     {
         CheckInitialised();
         _idempotencyChecker.Check(modelBuilder, _dbContext);
@@ -248,6 +258,7 @@ internal class SalusCore : ISalus, ISalusCore
                 {
                     saveEntity.FailedMessageSendAttempts++;
                     saveEntity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
+                    saveEntity.NextMessageSendAttemptUtc = DateTime.UtcNow.AddSeconds(Math.Pow(5, saveEntity.FailedMessageSendAttempts)); // TO DO - Make this configurable
                     // _dbContext and _salusContext point to the same context object
                     _dbContext.SaveChanges();
                 }

@@ -32,7 +32,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
     protected override sealed void OnModelCreating(ModelBuilder modelBuilder)
     {
         OnSalusModelCreating(modelBuilder);
-        _salus.Check(modelBuilder);
+        _salus.OnModelCreating(modelBuilder);
     }
 
     protected virtual void OnSalusModelCreating(ModelBuilder modelBuilder)
