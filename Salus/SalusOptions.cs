@@ -1,9 +1,13 @@
-﻿namespace Salus;
+﻿using Salus.Configuration.Retry;
+
+namespace Salus;
 
 public class SalusOptions
 {
     public Action<string>? Sender { get; private set; }
     public Func<string, Task>? SenderAsync { get; private set; }
+    public IRetryStrategy RetryStrategy { get; private set; } = new ConstantRetry(500);
+
 
     public SalusOptions SetMessageSender(Action<string> sender)
     {
@@ -14,6 +18,12 @@ public class SalusOptions
     public SalusOptions SetAsyncMessageSender(Func<string, Task> senderAsync)
     {
         SenderAsync = senderAsync;
+        return this;
+    }
+
+    public SalusOptions SetRetryStrategy(IRetryStrategy retryStrategy)
+    {
+        RetryStrategy = retryStrategy;
         return this;
     }
 }

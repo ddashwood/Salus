@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Salus;
+using Salus.Configuration.Retry;
 using SalusExampleParent;
 
 using IHost host = Host.CreateDefaultBuilder()
@@ -10,13 +11,16 @@ using IHost host = Host.CreateDefaultBuilder()
     {
         services.AddSalus<ExampleDbContext>(options =>
         {
-            options.SetMessageSender(message => Console.WriteLine("Sending: " + JsonConvert.SerializeObject(message)));
+            options
+                .SetMessageSender(message => throw new Exception("*** Example Failure ***"))
+                .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
         });
         services.AddScoped<ExampleParent>();
         services.AddDbContext<ExampleDbContext>(options =>
         {
             options.UseSqlite("Data Source=Application.db");
         });
+        
     })
     .Build();
 

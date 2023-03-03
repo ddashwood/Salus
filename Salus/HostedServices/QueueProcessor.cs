@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Salus.Messaging;
+using Salus.Models.Changes;
 
 namespace Salus.HostedServices;
 
@@ -7,11 +10,13 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
 {
     private readonly TContext _context;
     private readonly ILogger<QueueProcessor<TContext>> _logger;
+    private readonly IMessageSender _messageSender;
 
-    public QueueProcessor(TContext context, ILogger<QueueProcessor<TContext>> logger)
+    public QueueProcessor(TContext context, ILogger<QueueProcessor<TContext>> logger, IMessageSender messageSender)
     {
         _context = context;
         _logger = logger;
+        _messageSender = messageSender;
     }
 
     public async Task ProcessQueue()
@@ -20,10 +25,21 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
 
         var queue = await  _context.SalusDataChanges
             .Where(c => c.CompletedDateTimeUtc == null
-                     && c.FailedMessageSendAttempts < 10    // TO DO - Make this configurable
                      && DateTime.UtcNow >= c.NextMessageSendAttemptUtc)
             .ToListAsync();
 
+        _logger.LogInformation($"Queue contains {queue.Count} items");
 
+        foreach (var dataChange in queue)
+        {
+            try
+            {
+                await _messageSender.SendAsync(dataChange.UpdateJson, dataChange, _context);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error processing queue item");
+            }
+        }
     }
 }

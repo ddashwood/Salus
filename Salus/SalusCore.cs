@@ -58,7 +58,7 @@ internal class SalusCore : ISalus, ISalusCore
     {
         modelBuilder.Entity<SalusUpdateEntity>(e =>
         {
-            e.HasIndex(u => new { u.CompletedDateTimeUtc, u.FailedMessageSendAttempts });
+            e.HasIndex(u => new { u.CompletedDateTimeUtc, u.NextMessageSendAttemptUtc });
         });
 
         Check(modelBuilder);
@@ -227,91 +227,14 @@ internal class SalusCore : ISalus, ISalusCore
     public void SendMessages(Save save)
     {
         CheckInitialised();
-
-        try
-        {
-            _messageSender.Send(JsonConvert.SerializeObject(save));
-
-            try
-            {
-                var saveEntity = _salusContext.SalusDataChanges.SingleOrDefault(s => s.Id == save.Id);
-                if (saveEntity != null)
-                {
-                    saveEntity.CompletedDateTimeUtc = DateTime.UtcNow;
-                    // _dbContext and _salusContext point to the same context object
-                    _dbContext.SaveChanges();
-                }
-            }
-            catch(Exception saveException)
-            {
-                _logger?.LogError(saveException, "Error saving Salus changes");
-            }
-        }
-        catch(Exception ex)
-        {
-            _logger?.LogWarning(ex, "Error sending message - message will be queued to be re-tried later");
-
-            try
-            {
-                var saveEntity = _salusContext.SalusDataChanges.SingleOrDefault(s => s.Id == save.Id);
-                if (saveEntity != null)
-                {
-                    saveEntity.FailedMessageSendAttempts++;
-                    saveEntity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
-                    saveEntity.NextMessageSendAttemptUtc = DateTime.UtcNow.AddSeconds(Math.Pow(5, saveEntity.FailedMessageSendAttempts)); // TO DO - Make this configurable
-                    // _dbContext and _salusContext point to the same context object
-                    _dbContext.SaveChanges();
-                }
-            }
-            catch (Exception saveException)
-            {
-                _logger?.LogError(saveException, "Error recording message send failure");
-            }
-        }
+        var saveEntity = _salusContext.SalusDataChanges.SingleOrDefault(s => s.Id == save.Id);
+        _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
     }
 
     public async Task SendMessageAsync(Save save)
     {
         CheckInitialised();
-
-        try
-        {
-            await _messageSender.SendAsync(JsonConvert.SerializeObject(save));
-
-            try
-            {
-                var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id);
-                if (saveEntity != null)
-                {
-                    saveEntity.CompletedDateTimeUtc = DateTime.UtcNow;
-                    // _dbContext and _salusContext point to the same context object
-                    await _dbContext.SaveChangesAsync();
-                }
-            }
-            catch (Exception saveException)
-            {
-                _logger?.LogError(saveException, "Error saving Salus changes");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger?.LogWarning(ex, "Error sending message - message will be queued to be re-tried later");
-
-            try
-            {
-                var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id);
-                if (saveEntity != null)
-                {
-                    saveEntity.FailedMessageSendAttempts++;
-                    saveEntity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
-                    // _dbContext and _salusContext point to the same context object
-                    await _dbContext.SaveChangesAsync();
-                }
-            }
-            catch (Exception saveException)
-            {
-                _logger?.LogError(saveException, "Error recording message send failure");
-            }
-        }
+        var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id);
+        await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
     }
 }

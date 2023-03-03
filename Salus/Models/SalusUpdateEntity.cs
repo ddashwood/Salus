@@ -9,10 +9,10 @@ public class SalusUpdateEntity
     [Key]
     public string Id { get; private set; } = string.Empty;
     public DateTime UpdateDateTimeUtc { get; private set; } = DateTime.UtcNow;
-    public DateTime? CompletedDateTimeUtc { get; set; }
-    public int FailedMessageSendAttempts { get; set; }
-    public DateTime? LastFailedMessageSendAttemptUtc { get; set; }
-    public DateTime? NextMessageSendAttemptUtc { get; set; }
+    public DateTime? CompletedDateTimeUtc { get; internal set; }
+    public int FailedMessageSendAttempts { get; internal set; }
+    public DateTime? LastFailedMessageSendAttemptUtc { get; internal set; }
+    public DateTime? NextMessageSendAttemptUtc { get; internal set; }
     public string UpdateJson { get; private set; } = string.Empty;
 
     // For Entity Framework
