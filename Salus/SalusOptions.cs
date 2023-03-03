@@ -7,6 +7,7 @@ public class SalusOptions
     public Action<string>? Sender { get; private set; }
     public Func<string, Task>? SenderAsync { get; private set; }
     public IRetryStrategy RetryStrategy { get; private set; } = new ConstantRetry(500);
+    public int RetryQueueProcessIntervalMilliseconds { get; private set; } = 500;
 
 
     public SalusOptions SetMessageSender(Action<string> sender)
@@ -24,6 +25,12 @@ public class SalusOptions
     public SalusOptions SetRetryStrategy(IRetryStrategy retryStrategy)
     {
         RetryStrategy = retryStrategy;
+        return this;
+    }
+
+    public SalusOptions SetRetryQueueProcessInterval(int milliseconds)
+    {
+        RetryQueueProcessIntervalMilliseconds = milliseconds;
         return this;
     }
 }

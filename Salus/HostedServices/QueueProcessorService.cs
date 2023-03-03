@@ -8,12 +8,14 @@ internal class QueueProcessorService<TContext> : IHostedService where TContext :
 {
     private readonly ILogger<QueueProcessorService<TContext>> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly SalusOptions _options;
     private Timer? _timer;
 
-    public QueueProcessorService(ILogger<QueueProcessorService<TContext>> logger, IServiceScopeFactory scopeFactory)
+    public QueueProcessorService(ILogger<QueueProcessorService<TContext>> logger, IServiceScopeFactory scopeFactory, SalusOptions options)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
+        _options = options;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -21,8 +23,7 @@ internal class QueueProcessorService<TContext> : IHostedService where TContext :
         try
         {
             _logger.LogInformation("Queue Processor starting");
-
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(_options.RetryQueueProcessIntervalMilliseconds));
         }
         catch (Exception ex)
         {

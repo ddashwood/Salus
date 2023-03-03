@@ -12,7 +12,9 @@ using IHost host = Host.CreateDefaultBuilder()
         services.AddSalus<ExampleDbContext>(options =>
         {
             options
-                .SetMessageSender(message => throw new Exception("*** Example Failure ***"))
+                //.SetMessageSender(message => throw new Exception("*** Example Failure ***"))
+                .SetMessageSender(message => Console.WriteLine("Sending: " + JsonConvert.SerializeObject(message)))
+                .SetRetryQueueProcessInterval(100)
                 .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
         });
         services.AddScoped<ExampleParent>();
@@ -26,6 +28,7 @@ using IHost host = Host.CreateDefaultBuilder()
 
 using var scope = host.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<ExampleDbContext>();
+context.Database.EnsureDeleted();
 context.Database.OpenConnection();
 context.Database.Migrate();
 

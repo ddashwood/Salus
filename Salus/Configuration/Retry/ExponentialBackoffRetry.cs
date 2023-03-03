@@ -24,8 +24,6 @@ public class ExponentialBackoffRetry : IRetryStrategy
             interval = MaxDelayMilliseconds.Value;
         }
 
-        var x = DateTime.UtcNow.AddMilliseconds(interval);
-        Console.WriteLine($"***** New time {x} with interval {interval}");
-        return x;
+        return DateTime.UtcNow.AddMilliseconds(interval);
     }
 }
