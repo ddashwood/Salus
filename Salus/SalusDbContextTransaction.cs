@@ -68,9 +68,12 @@ internal class SalusDbContextTransaction : IDbContextTransaction
         }
     }
 
-    public Task OnCommittingAsync()
+    public async Task OnCommittingAsync()
     {
-        throw new NotImplementedException();
+        foreach (var save in _transactionSaves)
+        {
+            await _salus.SendMessageAsync(save);
+        }
     }
     public void OnRollingBack()
     {

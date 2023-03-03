@@ -121,9 +121,57 @@ internal class SalusCore : ISalus, ISalusCore
         return result.Changes.Count;
     }
 
-    public Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, Func<bool, CancellationToken, Task<int>> baseSaveChanges)
+    public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken, Func<bool, CancellationToken, Task<int>> baseSaveChanges)
     {
-        throw new NotImplementedException();
+        CheckInitialised();
+
+        var result = await BuildPreliminarySaveAsync(cancellationToken);
+
+        IDbContextTransaction? tran = null;
+        try
+        {
+            if (_dbContext.Database.CurrentTransaction == null)
+            {
+                // If we're not already in a transaction, we create one here.
+                // If we *are* already in a transaction, that transaction will be sufficient
+
+                tran = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            }
+
+            await baseSaveChanges(acceptAllChangesOnSuccess, cancellationToken);
+
+            if (result != null)
+            {
+                await CompleteSaveAsync(result);
+            }
+
+            await (tran?.CommitAsync() ?? Task.CompletedTask);
+        }
+        catch
+        {
+            await (tran?.RollbackAsync() ?? Task.CompletedTask);
+            throw;
+        }
+        finally
+        {
+            tran?.Dispose();
+        }
+
+
+        if (result == null)
+        {
+            return 0;
+        }
+
+        if (_dbContext.Database.CurrentTransaction == null)
+        {
+            await SendMessageAsync(result);
+        }
+        else
+        {
+            _salusContext.SalusDatabase.AddTransactionSave(result);
+        }
+        return result.Changes.Count;
     }
 
     private Save? BuildPreliminarySave()
@@ -132,12 +180,27 @@ internal class SalusCore : ISalus, ISalusCore
         return _saver.BuildPreliminarySave(_dbContext);
     }
 
-    private Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken)
+    private async Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        CheckInitialised();
+        return await _saver.BuildPreliminarySaveAsync(cancellationToken, _dbContext);
     }
 
     private void CompleteSave(Save save)
+    {
+        CheckInitialised();
+        CompleteSaveCommon(save);
+        _dbContext.SaveChanges();
+    }
+
+    private async Task CompleteSaveAsync(Save save)
+    {
+        CheckInitialised();
+        CompleteSaveCommon(save);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    private void CompleteSaveCommon(Save save)
     {
         CheckInitialised();
 
@@ -148,13 +211,8 @@ internal class SalusCore : ISalus, ISalusCore
         var entity = new SalusUpdateEntity(save);
         // _dbContext and _salusContext point to the same context object
         _salusContext.SalusDataChanges.Add(entity);
-        _dbContext.SaveChanges();
     }
 
-    private Task CompleteSaveAsync(Save save)
-    {
-        throw new NotImplementedException();
-    }
 
     public void SendMessages(Save save)
     {
@@ -192,6 +250,51 @@ internal class SalusCore : ISalus, ISalusCore
                     saveEntity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
                     // _dbContext and _salusContext point to the same context object
                     _dbContext.SaveChanges();
+                }
+            }
+            catch (Exception saveException)
+            {
+                _logger?.LogError(saveException, "Error recording message send failure");
+            }
+        }
+    }
+
+    public async Task SendMessageAsync(Save save)
+    {
+        CheckInitialised();
+
+        try
+        {
+            await _messageSender.SendAsync(JsonConvert.SerializeObject(save));
+
+            try
+            {
+                var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id);
+                if (saveEntity != null)
+                {
+                    saveEntity.CompletedDateTimeUtc = DateTime.UtcNow;
+                    // _dbContext and _salusContext point to the same context object
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception saveException)
+            {
+                _logger?.LogError(saveException, "Error saving Salus changes");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Error sending message - message will be queued to be re-tried later");
+
+            try
+            {
+                var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id);
+                if (saveEntity != null)
+                {
+                    saveEntity.FailedMessageSendAttempts++;
+                    saveEntity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
+                    // _dbContext and _salusContext point to the same context object
+                    await _dbContext.SaveChangesAsync();
                 }
             }
             catch (Exception saveException)

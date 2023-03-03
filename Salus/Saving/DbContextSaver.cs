@@ -65,9 +65,9 @@ internal class DbContextSaver : IDbContextSaver
         return new Save(changes);
     }
 
-    public Task<Save> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context)
+    public Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(BuildPreliminarySave(context));
     }
 
     public void Apply(DbContext context, IEnumerable<Change> changes)

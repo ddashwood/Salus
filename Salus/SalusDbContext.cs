@@ -52,7 +52,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, base.SaveChangesAsync);
+        return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken, base.SaveChangesAsync);
     }
 
     internal void Apply(Save save)

@@ -1,6 +1,6 @@
-﻿namespace Salus.Messaging;
+﻿namespace SalusTests;
 
-internal interface IMessageSender
+public interface ITestMessageSender
 {
     void Send(string message);
     Task SendAsync(string message);

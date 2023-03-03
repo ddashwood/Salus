@@ -9,13 +9,14 @@ internal interface ISalusCore
 
     int SaveChanges(bool acceptAllChangesOnSuccess, Func<bool, int> baseSaveChanges);
 
-    Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, Func<bool, CancellationToken, Task<int>> baseSaveChanges);
+    Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken, Func<bool, CancellationToken, Task<int>> baseSaveChanges);
 
     void Apply(Save save);
 
     void Check(ModelBuilder modelBuilder);
     
     void SendMessages(Save save);
+    Task SendMessageAsync(Save save);
 
     SalusOptions Options { get; }
 }

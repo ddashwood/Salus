@@ -30,7 +30,8 @@ internal class SalusDatabaseFacade : DatabaseFacade
     public override async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         var tran = await _wrappedFacade.BeginTransactionAsync(cancellationToken);
-        return new SalusDbContextTransaction(tran, _salus);
+        _currentTransaction = new SalusDbContextTransaction(tran, _salus);
+        return _currentTransaction;
     }
     public override bool CanConnect()
     {
