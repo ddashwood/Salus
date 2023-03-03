@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Salus.Idempotency;
@@ -7,6 +8,7 @@ using Salus.Models;
 using Salus.Models.Changes;
 using Salus.Saving;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Salus;
 
@@ -67,18 +69,76 @@ internal class SalusCore : ISalus, ISalusCore
         _saver.Apply(_dbContext, save.Changes);
     }
 
-    public Save? BuildPreliminarySave()
+    public int SaveChanges(bool acceptAllChangesOnSuccess, Func<bool, int> baseSaveChanges)
+    {
+        CheckInitialised();
+
+        var result = BuildPreliminarySave();
+
+        IDbContextTransaction? tran = null;
+        try
+        {
+            if (_dbContext.Database.CurrentTransaction == null)
+            {
+                // If we're not already in a transaction, we create one here.
+                // If we *are* already in a transaction, that transaction will be sufficient
+
+                tran = _dbContext.Database.BeginTransaction();
+            }
+
+            baseSaveChanges(acceptAllChangesOnSuccess);
+
+            if (result != null)
+            {
+                CompleteSave(result);
+            }
+
+            tran?.Commit();
+        }
+        catch
+        {
+            tran?.Rollback();
+            throw;
+        }
+        finally
+        {
+            tran?.Dispose();
+        }
+
+
+        if (result == null)
+        {
+            return 0;
+        }
+
+        if (_dbContext.Database.CurrentTransaction == null)
+        {
+            SendMessages(result);
+        }
+        else
+        {
+            _salusContext.SalusDatabase.AddTransactionSave(result);
+        }
+        return result.Changes.Count;
+    }
+
+    public Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, Func<bool, CancellationToken, Task<int>> baseSaveChanges)
+    {
+        throw new NotImplementedException();
+    }
+
+    private Save? BuildPreliminarySave()
     {
         CheckInitialised();
         return _saver.BuildPreliminarySave(_dbContext);
     }
 
-    public Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken)
+    private Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public void CompleteSave(Save save)
+    private void CompleteSave(Save save)
     {
         CheckInitialised();
 
@@ -92,7 +152,7 @@ internal class SalusCore : ISalus, ISalusCore
         _dbContext.SaveChanges();
     }
 
-    public Task CompleteSaveAsync(Save save)
+    private Task CompleteSaveAsync(Save save)
     {
         throw new NotImplementedException();
     }

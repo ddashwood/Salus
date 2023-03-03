@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 using Salus.Models;
 using Salus.Models.Changes;
 
@@ -45,79 +44,15 @@ public class SalusDbContext : DbContext, ISalusDbContext
     
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        var result = _salus.BuildPreliminarySave();
-
-        IDbContextTransaction? tran = null;
-        try
-        {
-            if (Database.CurrentTransaction == null)
-            {
-                // If we're not already in a transaction, we create one here.
-                // If we *are* already in a transaction, that transaction will be sufficient
-
-                tran = Database.BeginTransaction();
-            }
-
-            base.SaveChanges(acceptAllChangesOnSuccess);
-
-            if (result != null)
-            {
-                _salus.CompleteSave(result);
-            }
-
-            tran?.Commit();
-        }
-        catch
-        {
-            tran?.Rollback();
-            throw;
-        }
-        finally
-        {
-            tran?.Dispose();
-        }
-
-
-        if (result == null)
-        {
-            return 0;
-        }
-
-        if (Database.CurrentTransaction == null)
-        {
-            _salus.SendMessages(result);
-        }
-        else
-        {
-            SalusDatabase.AddTransactionSave(result);
-        }
-        return result.Changes.Count;
+        return _salus.SaveChanges(acceptAllChangesOnSuccess, base.SaveChanges);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         await SaveChangesAsync(true, cancellationToken);
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-
-        //var result = await _salus.SaveChangesAsync(cancellationToken);
-        //await base.SaveChangesAsync(acceptAllChangesOnSuccess);
-
-        //if (result == null)
-        //{
-        //    return 0;
-        //}
-
-        //if (Database.CurrentTransaction == null)
-        //{
-        //    _salus.SendMessages(result);
-        //}
-        //else
-        //{
-        //    SalusDatabase.AddTransactionSave(result);
-        //}
-        //return result.Changes.Count;
+        return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, base.SaveChangesAsync);
     }
 
     internal void Apply(Save save)
@@ -125,7 +60,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
         _salus.Apply(save);
     }
 
-    private SalusDatabaseFacade SalusDatabase
+    SalusDatabaseFacade ISalusDbContext.SalusDatabase
     {
         get
         {
@@ -137,5 +72,5 @@ public class SalusDbContext : DbContext, ISalusDbContext
         }
     }
 
-    public override DatabaseFacade Database => SalusDatabase;
+    public override DatabaseFacade Database => (DatabaseFacade)((this as ISalusDbContext).SalusDatabase);
 }

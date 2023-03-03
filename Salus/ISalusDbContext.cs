@@ -7,4 +7,5 @@ internal interface ISalusDbContext
 {
     DbSet<SalusUpdateEntity> SalusDataChanges { get; }
 
+    SalusDatabaseFacade SalusDatabase { get; }
 }

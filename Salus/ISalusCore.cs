@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Salus.Models.Changes;
+using System.Threading;
 
 namespace Salus;
 
@@ -7,10 +8,9 @@ internal interface ISalusCore
 {
     void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext;
 
-    Save? BuildPreliminarySave();
-    Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken);
-    void CompleteSave(Save save);
-    Task CompleteSaveAsync(Save save);
+    int SaveChanges(bool acceptAllChangesOnSuccess, Func<bool, int> baseSaveChanges);
+
+    Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, Func<bool, CancellationToken, Task<int>> baseSaveChanges);
 
     void Apply(Save save);
 
