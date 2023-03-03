@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Salus.Models;
 using Salus.Models.Changes;
 
@@ -45,16 +46,42 @@ public class SalusDbContext : DbContext, ISalusDbContext
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         var result = _salus.BuildPreliminarySave();
-        base.SaveChanges(acceptAllChangesOnSuccess);
 
-        if (result != null)
+        IDbContextTransaction? tran = null;
+        try
         {
-            _salus.CompleteSave(result);
+            if (Database.CurrentTransaction == null)
+            {
+                // If we're not already in a transaction, we create one here.
+                // If we *are* already in a transaction, that transaction will be sufficient
+
+                tran = Database.BeginTransaction();
+            }
+
+            base.SaveChanges(acceptAllChangesOnSuccess);
+
+            if (result != null)
+            {
+                _salus.CompleteSave(result);
+            }
+
+            if (tran != null)
+            {
+                tran.Commit();
+            }
         }
-
-        // TO DO - The separate SaveChanges above needs to be wrapped in a transaction
-        // with the previous SaveChanges, unless we are already in a transaction
-
+        catch
+        {
+            if (tran != null)
+            {
+                tran.Rollback();
+            }
+            throw;
+        }
+        finally
+        {
+            tran?.Dispose();
+        }
 
 
         if (result == null)
