@@ -14,7 +14,7 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<ITestMessageSender>();
 
         var salus = Helpers.BuildTestSalus(new SalusOptions()
             .SetMessageSender(mockSender.Object.Send));
@@ -51,7 +51,7 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesWithAsyncSenderAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<ITestMessageSender>();
 
         var salus = Helpers.BuildTestSalus(new SalusOptions()
             .SetMessageSender(mockSender.Object.Send)
@@ -90,7 +90,7 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesWithCommitAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<ITestMessageSender>();
 
         var salus = Helpers.BuildTestSalus(new SalusOptions()
             .SetMessageSender(mockSender.Object.Send)
