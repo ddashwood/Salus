@@ -65,17 +65,11 @@ public class SalusDbContext : DbContext, ISalusDbContext
                 _salus.CompleteSave(result);
             }
 
-            if (tran != null)
-            {
-                tran.Commit();
-            }
+            tran?.Commit();
         }
         catch
         {
-            if (tran != null)
-            {
-                tran.Rollback();
-            }
+            tran?.Rollback();
             throw;
         }
         finally
