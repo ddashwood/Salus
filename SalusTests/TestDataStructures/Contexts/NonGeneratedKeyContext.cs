@@ -17,4 +17,17 @@ internal class NonGeneratedKeyContext : SalusDbContext
 
     [SalusDbSet]
     public DbSet<NoKeyAnnotationStringIdEntity> Ents => Set<NoKeyAnnotationStringIdEntity>();
+
+    public void CreateDatabaseTables()
+    {
+        Database.OpenConnection();
+        Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) NOT NULL PRIMARY KEY, Name VARCHAR(1000))");
+        Database.ExecuteSql($@"CREATE TABLE SalusDataChanges
+                                        (Id VARCHAR(1000) NOT NULL PRIMARY KEY,
+                                        UpdateDateTimeUtc VARCHAR(1000) NOT NULL,
+                                        CompletedDateTimeUtc VARCHAR(1000),
+                                        FailedMessageSendAttempts INT NOT NULL,
+                                        LastFailedMessageSendAttemptUtc VARCHAR(1000),
+                                        UpdateJson VARCHAR(10000) NOT NULL)");
+    }
 }

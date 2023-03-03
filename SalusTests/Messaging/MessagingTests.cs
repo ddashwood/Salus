@@ -30,7 +30,7 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         // Act
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
@@ -64,7 +64,7 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         // Act
         using (var tran = context.Database.BeginTransaction())
@@ -98,7 +98,7 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
         
         // Act
         using (var tran = context.Database.BeginTransaction())
@@ -136,7 +136,7 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         // Act
         context.Ents.Add(new NoKeyAnnotationStringIdEntity

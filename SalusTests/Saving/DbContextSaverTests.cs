@@ -24,7 +24,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         // Act
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
@@ -57,7 +57,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
@@ -104,7 +104,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
@@ -150,7 +150,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         // Act
         var save = JsonConvert.DeserializeObject<Save>(ADD_JSON)!;
@@ -176,7 +176,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
@@ -220,7 +220,7 @@ public class DbContextSaverTests
 
         var context = new NonGeneratedKeyContext(salus, options);
 
-        Helpers.CreateDatabaseTables(context);
+        context.CreateDatabaseTables();
 
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
         {
