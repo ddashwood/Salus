@@ -44,17 +44,13 @@ public class SalusDbContext : DbContext, ISalusDbContext
     
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        // TO DO - This needs to not actually gather the data, because some of the data
-        // is only available after SaveChanges. It needs to make a note of all entities
-        // and their states
-        var result = _salus.SaveChanges();
-
-
+        var result = _salus.BuildPreliminarySave();
         base.SaveChanges(acceptAllChangesOnSuccess);
 
-
-        // TO DO - Now we can re-visit that list of changes, gather the data, and
-        // write it to the database with a separate SaveChanges
+        if (result != null)
+        {
+            _salus.CompleteSave(result);
+        }
 
         // TO DO - The separate SaveChanges above needs to be wrapped in a transaction
         // with the previous SaveChanges, unless we are already in a transaction

@@ -67,32 +67,34 @@ internal class SalusCore : ISalus, ISalusCore
         _saver.Apply(_dbContext, save.Changes);
     }
 
-    public Save? SaveChanges()
+    public Save? BuildPreliminarySave()
     {
         CheckInitialised();
-        var result = _saver.SaveChanges(_dbContext);
-
-        if (result == null)
-        {
-            return null;
-        }
-
-        _salusContext.SalusDataChanges.Add(new SalusUpdateEntity(result));
-        return result;
+        return _saver.BuildPreliminarySave(_dbContext);
     }
 
-    public async Task<Save?> SaveChangesAsync(CancellationToken cancellationToken)
+    public Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void CompleteSave(Save save)
     {
         CheckInitialised();
-        var result = await _saver.SaveChangesAsync(cancellationToken, _dbContext);
 
-        if (result == null)
+        foreach (var change in save.Changes)
         {
-            return null;
+            change.CompleteAfterSave();
         }
+        var entity = new SalusUpdateEntity(save);
+        // _dbContext and _salusContext point to the same context object
+        _salusContext.SalusDataChanges.Add(entity);
+        _dbContext.SaveChanges();
+    }
 
-        _salusContext.SalusDataChanges.Add(new SalusUpdateEntity(result));
-        return result;
+    public Task CompleteSaveAsync(Save save)
+    {
+        throw new NotImplementedException();
     }
 
     public void SendMessages(Save save)

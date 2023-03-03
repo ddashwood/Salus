@@ -5,8 +5,8 @@ namespace Salus.Saving;
 
 internal interface IDbContextSaver
 {
-    Save? SaveChanges(DbContext context);
-    Task<Save> SaveChangesAsync(CancellationToken cancellationToken, DbContext context);
+    Save? BuildPreliminarySave(DbContext context);
+    Task<Save> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context);
 
     void Apply(DbContext context, IEnumerable<Change> changes);
 }

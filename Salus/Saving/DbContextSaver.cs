@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Salus.Models;
 using Salus.Models.Changes;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,7 +13,7 @@ internal class DbContextSaver : IDbContextSaver
     // change of the data, not when it is updated elsewhere
     private bool _applying;
 
-    public Save? SaveChanges(DbContext context)
+    public Save? BuildPreliminarySave(DbContext context)
     {
         if (_applying)
         {
@@ -66,7 +65,7 @@ internal class DbContextSaver : IDbContextSaver
         return new Save(changes);
     }
 
-    public Task<Save> SaveChangesAsync(CancellationToken cancellationToken, DbContext context)
+    public Task<Save> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context)
     {
         throw new NotImplementedException();
     }

@@ -15,6 +15,9 @@ internal class Change
         Delete
     }
 
+    private EntityEntry? _entry;
+    private PropertyValues? _originalValues;
+
     [JsonProperty]
     public ChangeTypeEnum ChangeType { get; private set; } = default;
     [JsonProperty]
@@ -29,38 +32,51 @@ internal class Change
 
     public Change(EntityEntry entry)
     {
-        switch (entry.State)
+        _entry = entry;
+        _originalValues = entry.OriginalValues.Clone();
+        ChangeType = entry.State switch
         {
-            case EntityState.Added:
-                ChangeType = ChangeTypeEnum.Insert;
-                ChangeClrType = entry.Metadata.ClrType.AssemblyQualifiedName ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
-                UpdatedFields = GetAllFields(entry);
-                PrimaryKeyFields = GetPrimaryKeyFields(entry);
+            EntityState.Added => ChangeTypeEnum.Insert,
+            EntityState.Modified => ChangeTypeEnum.Update,
+            EntityState.Deleted => ChangeTypeEnum.Delete,
+            _ => throw new InvalidOperationException("Entry's State is not suitable for building a Change record")
+        };
+        ChangeClrType = entry.Metadata.ClrType.AssemblyQualifiedName ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
+    }
+
+    public void CompleteAfterSave()
+    {
+        switch (ChangeType)
+        {
+            case ChangeTypeEnum.Insert:
+                UpdatedFields = GetAllFields();
+                PrimaryKeyFields = GetPrimaryKeyFields();
                 break;
-            case EntityState.Modified:
-                ChangeType = ChangeTypeEnum.Update;
-                ChangeClrType = entry.Metadata.ClrType.AssemblyQualifiedName ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
-                UpdatedFields = GetChangedFields(entry);
-                PrimaryKeyFields = GetPrimaryKeyFields(entry);
+            case ChangeTypeEnum.Update:
+                UpdatedFields = GetChangedFields();
+                PrimaryKeyFields = GetPrimaryKeyFields();
                 break;
-            case EntityState.Deleted:
-                ChangeType = ChangeTypeEnum.Delete;
-                ChangeClrType = entry.Metadata.ClrType.AssemblyQualifiedName ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
-                PrimaryKeyFields = GetPrimaryKeyFields(entry);
+            case ChangeTypeEnum.Delete:
+                PrimaryKeyFields = GetPrimaryKeyFields();
                 break;
             default:
-                throw new InvalidOperationException("Entry's State is not suitable for building a Change record");
+                throw new InvalidOperationException("Entry's ChangeType is not suitable for building a Change record");
         }
     }
 
-    private List<FieldWithValue> GetPrimaryKeyFields(EntityEntry entry)
+    private List<FieldWithValue> GetPrimaryKeyFields()
     {
+        if (_entry == null || _originalValues == null)
+        {
+            throw new InvalidOperationException("Can't finish getting data on an object that wasn't created from an Entity");
+        }
+
         // Find primary key
         // Note that it is only possible to do this using internal EF Core features, which
         // may be removed in future releases of EF Core
 #pragma warning disable EF1001 // Internal EF Core API usage.
-        IDbContextServices contextServices = entry.Context.GetService<IDbContextServices>();
-        var internalEntityType = contextServices.Model.FindEntityType(entry.Entity.GetType());
+        IDbContextServices contextServices = _entry.Context.GetService<IDbContextServices>();
+        var internalEntityType = contextServices.Model.FindEntityType(_entry.Entity.GetType());
 #pragma warning restore EF1001 // Internal EF Core API usage.
         var primaryKeyProperties = internalEntityType!.FindPrimaryKey()!.Properties;
 
@@ -71,18 +87,23 @@ internal class Change
             results.Add(new FieldWithValue
             {
                 Name = primaryKeyProperty.Name,
-                Value = entry.OriginalValues[primaryKeyProperty]
+                Value = _entry.CurrentValues[primaryKeyProperty]
             });
         }
 
         return results;
     }
 
-    private List<FieldWithValue> GetAllFields(EntityEntry entry)
+    private List<FieldWithValue> GetAllFields()
     {
+        if (_entry == null || _originalValues == null)
+        {
+            throw new InvalidOperationException("Can't finish getting data on an object that wasn't created from an Entity");
+        }
+
         var results = new List<FieldWithValue>();
 
-        foreach (var property in entry.Properties)
+        foreach (var property in _entry.Properties)
         {
             results.Add(new FieldWithValue
             {
@@ -94,13 +115,18 @@ internal class Change
         return results;
     }
 
-    private List<FieldWithValue> GetChangedFields(EntityEntry entry)
+    private List<FieldWithValue> GetChangedFields()
     {
+        if (_entry == null || _originalValues == null)
+        {
+            throw new InvalidOperationException("Can't finish getting data on an object that wasn't created from an Entity");
+        }
+
         var results = new List<FieldWithValue>();
 
-        foreach (var property in entry.Properties)
+        foreach (var property in _entry.Properties)
         {
-            if (property.CurrentValue != property.OriginalValue)
+            if (property.CurrentValue != _originalValues[property.Metadata])
             {
                 results.Add(new FieldWithValue
                 {
