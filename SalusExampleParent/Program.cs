@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Salus;
 using Salus.Configuration.Retry;
 using Salus.Messaging;
@@ -18,6 +17,7 @@ using IHost host = Host.CreateDefaultBuilder()
                 .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
         });
         services.AddTransient<IMessageSender, ConsoleMessageSender>();
+        services.AddTransient<IMessageSender, RabbitMqMessageSender>();
         //services.AddTransient<IMessageSender, ExceptionMessageSender>();
 
         services.AddScoped<ExampleParent>();

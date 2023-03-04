@@ -1,30 +1,18 @@
-﻿using RabbitMQ.Client;
-
-namespace SalusExampleParent;
-
-// To set up, run RabbitMQ in Docker with the following command:
-//   docker run -d --hostname salus-demo --name salus-demo-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+﻿namespace SalusExampleParent;
 
 internal class ExampleParent
 {
+    private readonly ExampleDbContext _context;
+
     public ExampleParent(ExampleDbContext context)
     {
-        context.ExampleData.Add(new ExampleData { Data = "Example" });
-        context.SaveChanges();
+        _context = context;
     }
 
     public async Task Run()
     {
-        var factory = new ConnectionFactory()
-        {
-            HostName = "localhost",
-            UserName = "guest",
-            Password = "guest"
-        };
-        var connection = factory.CreateConnection();
-        var channel = connection.CreateModel();
-        channel.ExchangeDeclare("salus-demo-data", "direct", true, false, null);
-
+        _context.ExampleData.Add(new ExampleData { Data = "Example" });
+        _context.SaveChanges();
 
 
         const int DELAY = 10000;
