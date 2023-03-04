@@ -26,17 +26,24 @@ using IHost host = Host.CreateDefaultBuilder()
     })
     .Build();
 
-using var scope = host.Services.CreateScope();
-var context = scope.ServiceProvider.GetRequiredService<ExampleDbContext>();
-context.Database.EnsureDeleted();
-context.Database.OpenConnection();
-context.Database.Migrate();
+using (var scope = host.Services.CreateScope())
+{
+    // Ensure the database is created
+    var context = scope.ServiceProvider.GetRequiredService<ExampleDbContext>();
+    context.Database.EnsureDeleted();
+    context.Database.OpenConnection();
+    context.Database.Migrate();
 
-await host.StartAsync();
+    // IMPORTANT - this starts the queue processor. If you miss out this line,
+    // failed messages will not get re-sent!
+    await host.StartAsync();
 
-var app = scope.ServiceProvider.GetRequiredService<ExampleParent>();
-await app.Run();
+    // Now start the application
+    var app = scope.ServiceProvider.GetRequiredService<ExampleParent>();
+    await app.Run();
 
-var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-lifetime.StopApplication();
-await host.WaitForShutdownAsync();
+    // Clean up gracefully
+    var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+    lifetime.StopApplication();
+    await host.WaitForShutdownAsync();
+}
