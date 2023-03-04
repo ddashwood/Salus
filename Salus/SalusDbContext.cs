@@ -5,6 +5,9 @@ using Salus.Models.Entities;
 
 namespace Salus;
 
+/// <summary>
+/// A DbContext class that can be used as the base for creating Salus DbContexts.
+/// </summary>
 public class SalusDbContext : DbContext, ISalusDbContext
 {
     private readonly ISalusCore _salus;

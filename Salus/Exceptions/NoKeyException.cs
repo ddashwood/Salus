@@ -1,5 +1,8 @@
 ﻿namespace Salus.Exceptions;
 
+/// <summary>
+/// The exception that is thrown when no key exists and this is not allowed.
+/// </summary>
 public class NoKeyException : SalusException
 {
     public NoKeyException(string typeName)

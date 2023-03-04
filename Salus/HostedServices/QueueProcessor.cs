@@ -32,7 +32,7 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
         {
             try
             {
-                await _messageSender.SendAsync(dataChange.UpdateJson, dataChange, _context).ConfigureAwait(false);
+                await _messageSender.SendAsync(dataChange.SaveJson, dataChange, _context).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

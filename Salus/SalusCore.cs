@@ -11,6 +11,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Salus;
 
+/// <summary>
+/// The core internal features of Salus.
+/// </summary>
 internal class SalusCore : ISalus, ISalusCore
 {
     private readonly IDbContextIdempotencyChecker _idempotencyChecker;
@@ -21,8 +24,17 @@ internal class SalusCore : ISalus, ISalusCore
     private ISalusDbContext? _salusContext;
     private DbContext? _dbContext;
     
+    /// <inheritdoc/>
     public SalusOptions Options { get; }
 
+    /// <summary>
+    /// Constructs an instance of Salus core features.
+    /// </summary>
+    /// <param name="idempotencyChecker">An Idempotency checker.</param>
+    /// <param name="saver">A Saver.</param>
+    /// <param name="messageSender">A Message Sender.</param>
+    /// <param name="options">The options to be used by this instance.</param>
+    /// <param name="logger">A logger.</param>
     public SalusCore(
         IDbContextIdempotencyChecker idempotencyChecker,
         IDbContextSaver saver,
@@ -40,6 +52,7 @@ internal class SalusCore : ISalus, ISalusCore
         _logger = logger;
     }
 
+    /// <inheritdoc/>
     public void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -54,6 +67,7 @@ internal class SalusCore : ISalus, ISalusCore
         _ = _salusContext ?? throw new InvalidOperationException("Salus Core is not initialised");
     }
 
+    /// <inheritdoc/>
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SalusSaveEntity>(e =>
@@ -71,13 +85,14 @@ internal class SalusCore : ISalus, ISalusCore
     }
 
 
-
+    /// <inheritdoc/>
     public void Apply(Save save)
     {
         CheckInitialised();
         _saver.Apply(_dbContext, save.Changes);
     }
 
+    /// <inheritdoc/>
     public int SaveChanges(bool acceptAllChangesOnSuccess, Func<bool, int> baseSaveChanges)
     {
         CheckInitialised();
@@ -131,6 +146,7 @@ internal class SalusCore : ISalus, ISalusCore
         return result.Changes.Count;
     }
 
+    /// <inheritdoc/>
     public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken, Func<bool, CancellationToken, Task<int>> baseSaveChanges)
     {
         CheckInitialised();
@@ -223,7 +239,7 @@ internal class SalusCore : ISalus, ISalusCore
         _salusContext.SalusSaves.Add(entity);
     }
 
-
+    /// <inheritdoc/>
     public void SendMessages(Save save)
     {
         CheckInitialised();
@@ -231,6 +247,7 @@ internal class SalusCore : ISalus, ISalusCore
         _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
     }
 
+    /// <inheritdoc/>
     public async Task SendMessageAsync(Save save)
     {
         CheckInitialised();

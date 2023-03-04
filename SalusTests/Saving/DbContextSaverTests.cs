@@ -45,7 +45,7 @@ public class DbContextSaverTests
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
         Assert.Equal(1, context.SalusSaves.Count());
-        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().UpdateJson);
+        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class DbContextSaverTests
         Assert.True(context.Ents.Where(e => e.Id != "Test ID 2").All(e => e.Name == "Test Name"));
 
         Assert.Equal(1, context.SalusSaves.Count());
-        Assert.Equal(Helpers.FixVersion(UPDATE_JSON), context.SalusSaves.Single().UpdateJson);
+        Assert.Equal(Helpers.FixVersion(UPDATE_JSON), context.SalusSaves.Single().SaveJson);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class DbContextSaverTests
         Assert.True(context.Ents.All(e => e.Id != "Test ID 2"));
 
         Assert.Equal(1, context.SalusSaves.Count());
-        Assert.Equal(Helpers.FixVersion(DELETE_JSON), context.SalusSaves.Single().UpdateJson);
+        Assert.Equal(Helpers.FixVersion(DELETE_JSON), context.SalusSaves.Single().SaveJson);
     }
 
     [Fact]
@@ -290,7 +290,7 @@ public class DbContextSaverTests
         // We are asserting that an expected list of values includes the actual value
         // This is because the order of the two records in the JSON does not matter
         Assert.True(new[] { Helpers.FixVersion(AUTO_GENERATE_JSON_1), Helpers.FixVersion(AUTO_GENERATE_JSON_2) }
-                    .Contains(context.SalusSaves.Single().UpdateJson));
+                    .Contains(context.SalusSaves.Single().SaveJson));
 #pragma warning restore xUnit2017 // Do not use Contains() to check if a value exists in a collection
     }
 }

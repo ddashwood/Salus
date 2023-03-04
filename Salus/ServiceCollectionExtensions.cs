@@ -8,6 +8,13 @@ namespace Salus;
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Add Salus to a Service Collection.
+    /// </summary>
+    /// <typeparam name="TContext">The DbContext type that the Salus instance belongs to.</typeparam>
+    /// <param name="services">The Service Collection.</param>
+    /// <param name="options">A <see cref="SalusOptions"/> object.</param>
+    /// <returns></returns>
     public static IServiceCollection AddSalus<TContext>(this IServiceCollection services, Action<SalusOptions> options) where TContext : SalusDbContext
     {
         var optionsObject = new SalusOptions();

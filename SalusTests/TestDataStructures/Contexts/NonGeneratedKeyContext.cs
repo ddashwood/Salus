@@ -29,6 +29,6 @@ internal class NonGeneratedKeyContext : SalusDbContext
                                         FailedMessageSendAttempts INT NOT NULL,
                                         LastFailedMessageSendAttemptUtc VARCHAR(1000),
                                         NextMessageSendAttemptUtc VARCHAR(1000),
-                                        UpdateJson VARCHAR(10000) NOT NULL)");
+                                        SaveJson VARCHAR(10000) NOT NULL)");
     }
 }

@@ -5,16 +5,41 @@ using System.Diagnostics;
 
 namespace Salus.Models.Entities;
 
+/// <summary>
+/// A record of data that has been saved to a database, and the sending of the message
+/// to represent that save.
+/// </summary>
 public class SalusSaveEntity
 {
+    /// <summary>
+    /// A unique ID for this save.
+    /// </summary>
     [Key]
     public string Id { get; private set; } = string.Empty;
+    /// <summary>
+    /// The time at which the data was saved.
+    /// </summary>
     public DateTime UpdateDateTimeUtc { get; private set; } = DateTime.UtcNow;
+    /// <summary>
+    /// The time at which the message was successfully sent.
+    /// </summary>
     public DateTime? CompletedDateTimeUtc { get; internal set; }
+    /// <summary>
+    /// The number of times the message has failed to send.
+    /// </summary>
     public int FailedMessageSendAttempts { get; internal set; }
+    /// <summary>
+    /// The time of the last failed attempt to send the message.
+    /// </summary>
     public DateTime? LastFailedMessageSendAttemptUtc { get; internal set; }
+    /// <summary>
+    /// The next time to re-attempt sending the message.
+    /// </summary>
     public DateTime? NextMessageSendAttemptUtc { get; internal set; }
-    public string UpdateJson { get; private set; } = string.Empty;
+    /// <summary>
+    /// JSON representing the saved data.
+    /// </summary>
+    public string SaveJson { get; private set; } = string.Empty;
 
     // For Entity Framework
     private SalusSaveEntity()
@@ -38,13 +63,13 @@ public class SalusSaveEntity
         FailedMessageSendAttempts = failedAttempts;
         LastFailedMessageSendAttemptUtc = lastFailedSend;
         NextMessageSendAttemptUtc = nextSend;
-        UpdateJson = message;
+        SaveJson = message;
     }
 
     internal SalusSaveEntity(Save save)
     {
         Id = save.Id;
         UpdateDateTimeUtc = DateTime.UtcNow;
-        UpdateJson = JsonConvert.SerializeObject(save);
+        SaveJson = JsonConvert.SerializeObject(save);
     }
 }

@@ -3,6 +3,11 @@ using Salus.Models.Changes;
 
 namespace Salus;
 
+/// <summary>
+/// A DbContextTransaction that can be used internally by Salus - it
+/// overrides those features of DatabaseFacade which require special
+/// handling.
+/// </summary>
 internal class SalusDbContextTransaction : IDbContextTransaction
 {
     private readonly IDbContextTransaction _wrappedTransaction;
