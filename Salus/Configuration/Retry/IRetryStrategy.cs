@@ -1,8 +1,8 @@
-﻿using Salus.Models;
+﻿using Salus.Models.Entities;
 
 namespace Salus.Configuration.Retry;
 
 public interface IRetryStrategy
 {
-    DateTime GetNextAttemptTime(SalusUpdateEntity update);
+    DateTime GetNextAttemptTime(SalusSaveEntity update);
 }

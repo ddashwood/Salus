@@ -21,7 +21,7 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
     {
         _logger.LogInformation("Processing queue");
 
-        var queue = await  _context.SalusDataChanges
+        var queue = await  _context.SalusSaves
             .Where(c => c.CompletedDateTimeUtc == null
                      && DateTime.UtcNow >= c.NextMessageSendAttemptUtc)
             .ToListAsync().ConfigureAwait(false);

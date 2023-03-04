@@ -22,7 +22,7 @@ internal class NonGeneratedKeyContext : SalusDbContext
     {
         Database.OpenConnection();
         Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) NOT NULL PRIMARY KEY, Name VARCHAR(1000))");
-        Database.ExecuteSql($@"CREATE TABLE SalusDataChanges
+        Database.ExecuteSql($@"CREATE TABLE SalusSaves
                                         (Id VARCHAR(1000) NOT NULL PRIMARY KEY,
                                         UpdateDateTimeUtc VARCHAR(1000) NOT NULL,
                                         CompletedDateTimeUtc VARCHAR(1000),

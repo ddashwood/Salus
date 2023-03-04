@@ -4,7 +4,7 @@ using Moq;
 using Salus;
 using Salus.HostedServices;
 using Salus.Messaging;
-using Salus.Models;
+using Salus.Models.Entities;
 using SalusTests.TestDataStructures.Contexts;
 
 namespace SalusTests.HostedServices;
@@ -31,7 +31,7 @@ public class QueueProcessorTests
         context.CreateDatabaseTables();
 
         var json = """{"Message":"Example}""";
-        context.SalusDataChanges.Add(new SalusUpdateEntity("MyId", new DateTime(2020, 1, 1), null, 1,
+        context.SalusSaves.Add(new SalusSaveEntity("MyId", new DateTime(2020, 1, 1), null, 1,
             new DateTime(2020, 1, 1, 0, 0, 1), DateTime.Now.AddSeconds(-1), json));
         context.SaveChanges();
 
@@ -62,7 +62,7 @@ public class QueueProcessorTests
         context.CreateDatabaseTables();
 
         var json = """{"Message":"Example}""";
-        context.SalusDataChanges.Add(new SalusUpdateEntity("MyId", new DateTime(2020, 1, 1), new DateTime(2020, 1, 1), 1,
+        context.SalusSaves.Add(new SalusSaveEntity("MyId", new DateTime(2020, 1, 1), new DateTime(2020, 1, 1), 1,
             new DateTime(2020, 1, 1, 0, 0, 1), DateTime.Now.AddSeconds(-1), json));
         context.SaveChanges();
 
@@ -93,7 +93,7 @@ public class QueueProcessorTests
         context.CreateDatabaseTables();
 
         var json = """{"Message":"Example}""";
-        context.SalusDataChanges.Add(new SalusUpdateEntity("MyId", new DateTime(2020, 1, 1), null, 1,
+        context.SalusSaves.Add(new SalusSaveEntity("MyId", new DateTime(2020, 1, 1), null, 1,
             new DateTime(2020, 1, 1, 0, 0, 1), DateTime.Now.AddSeconds(10), json));
         context.SaveChanges();
 

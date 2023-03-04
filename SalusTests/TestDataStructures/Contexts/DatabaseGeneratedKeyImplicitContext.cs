@@ -22,7 +22,7 @@ internal class DatabaseGeneratedKeyImplicitContext : SalusDbContext
     {
         Database.OpenConnection();
         Database.ExecuteSql($"CREATE TABLE Ents (Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Name VARCHAR(1000))");
-        Database.ExecuteSql($@"CREATE TABLE SalusDataChanges
+        Database.ExecuteSql($@"CREATE TABLE SalusSaves
                                         (Id VARCHAR(1000) NOT NULL PRIMARY KEY,
                                         UpdateDateTimeUtc VARCHAR(1000) NOT NULL,
                                         CompletedDateTimeUtc VARCHAR(1000),

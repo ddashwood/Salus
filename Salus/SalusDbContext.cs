@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Salus.Models;
 using Salus.Models.Changes;
+using Salus.Models.Entities;
 
 namespace Salus;
 
@@ -27,7 +27,7 @@ public class SalusDbContext : DbContext, ISalusDbContext
         _salus.Init(this);
     }
 
-    public DbSet<SalusUpdateEntity> SalusDataChanges => Set<SalusUpdateEntity>();
+    public DbSet<SalusSaveEntity> SalusSaves => Set<SalusSaveEntity>();
 
     protected override sealed void OnModelCreating(ModelBuilder modelBuilder)
     {

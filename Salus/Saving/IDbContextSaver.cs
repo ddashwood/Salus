@@ -8,5 +8,5 @@ internal interface IDbContextSaver
     Save? BuildPreliminarySave(DbContext context);
     Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context);
 
-    void Apply(DbContext context, IEnumerable<Change> changes);
+    void Apply(DbContext context, IEnumerable<ChangedRow> changes);
 }

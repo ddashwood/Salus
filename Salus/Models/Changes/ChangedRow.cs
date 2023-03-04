@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Salus.Models.Changes;
 
-internal class Change
+internal class ChangedRow
 {
     public enum ChangeTypeEnum
     {
@@ -27,10 +27,10 @@ internal class Change
     [JsonProperty]
     public List<FieldWithValue>? PrimaryKeyFields { get; private set; }
 
-    public Change()
+    public ChangedRow()
     { }
 
-    public Change(EntityEntry entry)
+    public ChangedRow(EntityEntry entry)
     {
         _entry = entry;
         _originalValues = entry.OriginalValues.Clone();

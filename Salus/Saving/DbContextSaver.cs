@@ -22,7 +22,7 @@ internal class DbContextSaver : IDbContextSaver
 
         context.ChangeTracker.DetectChanges();
 
-        List<Change> changes = new();
+        List<ChangedRow> changes = new();
 
         var changeTrackerEntries = context.ChangeTracker.Entries().ToList();
         foreach (var entry in changeTrackerEntries)
@@ -40,14 +40,14 @@ internal class DbContextSaver : IDbContextSaver
                 continue;
             }
 
-            Change? change = null;
+            ChangedRow? change = null;
 
             switch (entry.State)
             {
                 case EntityState.Deleted:
                 case EntityState.Modified:
                 case EntityState.Added:
-                    change = new Change(entry);
+                    change = new ChangedRow(entry);
                     break;
             }
 
@@ -70,7 +70,7 @@ internal class DbContextSaver : IDbContextSaver
         return Task.FromResult(BuildPreliminarySave(context));
     }
 
-    public void Apply(DbContext context, IEnumerable<Change> changes)
+    public void Apply(DbContext context, IEnumerable<ChangedRow> changes)
     {
         try
         {
@@ -80,13 +80,13 @@ internal class DbContextSaver : IDbContextSaver
             {
                 switch (change.ChangeType)
                 {
-                    case Change.ChangeTypeEnum.Insert:
+                    case ChangedRow.ChangeTypeEnum.Insert:
                         ApplyInsert(context, change);
                         break;
-                    case Change.ChangeTypeEnum.Update:
+                    case ChangedRow.ChangeTypeEnum.Update:
                         ApplyUpdate(context, change);
                         break;
-                    case Change.ChangeTypeEnum.Delete:
+                    case ChangedRow.ChangeTypeEnum.Delete:
                         ApplyDelete(context, change);
                         break;
                     default:
@@ -102,7 +102,7 @@ internal class DbContextSaver : IDbContextSaver
         }
     }
 
-    private void ApplyInsert(DbContext context, Change change)
+    private void ApplyInsert(DbContext context, ChangedRow change)
     {
         var existingEntity = GetEntityFromDatabaseWithPrimaryKey(context, change, out var entityType);
         if (existingEntity != null)
@@ -125,13 +125,13 @@ internal class DbContextSaver : IDbContextSaver
         dbSetPropertyInfo.PropertyType.GetMethod("Add")!.Invoke(dbSet, new object?[] { entity });
     }
 
-    private void ApplyUpdate(DbContext context, Change change)
+    private void ApplyUpdate(DbContext context, ChangedRow change)
     {
         var entity = GetEntityFromDatabaseWithPrimaryKey(context, change, out var entityType);
         ApplyFieldChanges(change, entityType, entity);
     }
 
-    private void ApplyDelete(DbContext context, Change change)
+    private void ApplyDelete(DbContext context, ChangedRow change)
     {
         var entity = GetEntityFromDatabaseWithPrimaryKey(context, change, out var entityType);
         if (entity == null)
@@ -150,7 +150,7 @@ internal class DbContextSaver : IDbContextSaver
         dbSetPropertyInfo.PropertyType.GetMethod("Remove")!.Invoke(dbSet, new object?[] { entity });
     }
 
-    private static object? GetEntityFromDatabaseWithPrimaryKey(DbContext context, Change change, out Type entityType)
+    private static object? GetEntityFromDatabaseWithPrimaryKey(DbContext context, ChangedRow change, out Type entityType)
     {
         // N.b. need to create a local copy of this, because we are not allowed to use "out" parameters in
         // lambdas such as when we get the dbSetPropertyInfo below
@@ -173,7 +173,7 @@ internal class DbContextSaver : IDbContextSaver
         return method.Invoke(null, new object?[] { dbSet, change });
     }
 
-    private static object? GetEntityFromDatabaseWithPrimaryKey<TEntity>(DbSet<TEntity> dbSet, Change change) where TEntity : class
+    private static object? GetEntityFromDatabaseWithPrimaryKey<TEntity>(DbSet<TEntity> dbSet, ChangedRow change) where TEntity : class
     {
         IQueryable<TEntity> instance = dbSet;
 
@@ -193,7 +193,7 @@ internal class DbContextSaver : IDbContextSaver
     }
 
 
-    private static void ApplyFieldChanges(Change change, Type entityType, object? entity)
+    private static void ApplyFieldChanges(ChangedRow change, Type entityType, object? entity)
     {
         foreach (var fieldData in change.UpdatedFields!)
         {

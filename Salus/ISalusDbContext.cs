@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Salus.Models;
+using Salus.Models.Entities;
 
 namespace Salus;
 
 internal interface ISalusDbContext
 {
-    DbSet<SalusUpdateEntity> SalusDataChanges { get; }
+    DbSet<SalusSaveEntity> SalusSaves { get; }
 
     SalusDatabaseFacade SalusDatabase { get; }
 }

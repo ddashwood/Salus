@@ -1,4 +1,4 @@
-﻿using Salus.Models;
+﻿using Salus.Models.Entities;
 
 namespace Salus.Configuration.Retry;
 
@@ -11,7 +11,7 @@ public class ConstantRetry : IRetryStrategy
         RetryIntervalMilleseconds = retryIntervalMilliseconds;
     }
 
-    public DateTime GetNextAttemptTime(SalusUpdateEntity update)
+    public DateTime GetNextAttemptTime(SalusSaveEntity update)
     {
         return DateTime.UtcNow.AddMilliseconds(RetryIntervalMilleseconds);
     }

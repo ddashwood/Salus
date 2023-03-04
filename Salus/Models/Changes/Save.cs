@@ -10,10 +10,10 @@ internal class Save
     public string Id { get; }
     public string Version { get; }
 
-    private List<Change> _changes;
-    public IReadOnlyList<Change> Changes => _changes.AsReadOnly();
+    private List<ChangedRow> _changes;
+    public IReadOnlyList<ChangedRow> Changes => _changes.AsReadOnly();
 
-    public Save(List<Change> changes)
+    public Save(List<ChangedRow> changes)
     {
         Id = SequentialGuidGenerator.Instance.NewGuid().ToString();
         Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";

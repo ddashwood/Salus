@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Salus.Models;
+using Salus.Models.Entities;
 
 namespace Salus.Messaging;
 
 internal interface IMessageSender
 {
-    void Send(string message, SalusUpdateEntity? entity, DbContext context);
-    Task SendAsync(string message, SalusUpdateEntity? entity, DbContext context);
+    void Send(string message, SalusSaveEntity? entity, DbContext context);
+    Task SendAsync(string message, SalusSaveEntity? entity, DbContext context);
 }

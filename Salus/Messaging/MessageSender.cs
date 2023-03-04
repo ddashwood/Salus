@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Salus.Models;
+using Salus.Models.Entities;
 
 namespace Salus.Messaging;
 
@@ -15,7 +15,7 @@ internal class MessageSender : IMessageSender
         _logger = logger;
     }
 
-    public void Send(string message, SalusUpdateEntity? entity, DbContext context)
+    public void Send(string message, SalusSaveEntity? entity, DbContext context)
     {
         try
         {
@@ -58,7 +58,7 @@ internal class MessageSender : IMessageSender
         
     }
 
-    public async Task SendAsync(string message, SalusUpdateEntity? entity, DbContext context)
+    public async Task SendAsync(string message, SalusSaveEntity? entity, DbContext context)
     {
         try
         {

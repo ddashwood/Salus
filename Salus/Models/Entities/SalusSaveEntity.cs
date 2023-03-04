@@ -3,9 +3,9 @@ using Salus.Models.Changes;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
-namespace Salus.Models;
+namespace Salus.Models.Entities;
 
-public class SalusUpdateEntity
+public class SalusSaveEntity
 {
     [Key]
     public string Id { get; private set; } = string.Empty;
@@ -17,12 +17,12 @@ public class SalusUpdateEntity
     public string UpdateJson { get; private set; } = string.Empty;
 
     // For Entity Framework
-    private SalusUpdateEntity()
+    private SalusSaveEntity()
     {
     }
 
     // For testing
-    internal SalusUpdateEntity(string id, DateTime updateDateTime, DateTime? completedDataTime,
+    internal SalusSaveEntity(string id, DateTime updateDateTime, DateTime? completedDataTime,
         int failedAttempts, DateTime? lastFailedSend, DateTime? nextSend, string message)
     {
         StackTrace stackTrace = new StackTrace();
@@ -41,7 +41,7 @@ public class SalusUpdateEntity
         UpdateJson = message;
     }
 
-    internal SalusUpdateEntity(Save save)
+    internal SalusSaveEntity(Save save)
     {
         Id = save.Id;
         UpdateDateTimeUtc = DateTime.UtcNow;

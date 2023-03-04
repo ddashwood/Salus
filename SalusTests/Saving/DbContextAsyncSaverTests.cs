@@ -42,8 +42,8 @@ public class DbContextAsyncSaverTests
         Assert.Equal("Test ID", context.Ents.Single().Id);
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().UpdateJson);
         mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
 
@@ -80,8 +80,8 @@ public class DbContextAsyncSaverTests
         Assert.Equal("Test ID", context.Ents.Single().Id);
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().UpdateJson);
         mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Never);
         mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
@@ -125,8 +125,8 @@ public class DbContextAsyncSaverTests
         Assert.Equal("Test ID", context.Ents.Single().Id);
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().UpdateJson);
         mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Never);
         mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }

@@ -44,8 +44,8 @@ public class DbContextSaverTests
         Assert.Equal("Test ID", context.Ents.Single().Id);
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().UpdateJson);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class DbContextSaverTests
             Name = "Test Name"
         });
         context.SaveChanges();
-        context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
+        context.Database.ExecuteSql($"DELETE FROM SalusSaves");
 
         // Act
         var entity = context.Ents.Single(e => e.Id == "Test ID 2");
@@ -91,8 +91,8 @@ public class DbContextSaverTests
         Assert.Equal("Test Name 2", context.Ents.Single(e => e.Id == "Test ID 2").Name);
         Assert.True(context.Ents.Where(e => e.Id != "Test ID 2").All(e => e.Name == "Test Name"));
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(Helpers.FixVersion(UPDATE_JSON), context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(UPDATE_JSON), context.SalusSaves.Single().UpdateJson);
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public class DbContextSaverTests
             Name = "Test Name"
         });
         context.SaveChanges();
-        context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
+        context.Database.ExecuteSql($"DELETE FROM SalusSaves");
 
         // Act
         var entity = context.Ents.Single(e => e.Id == "Test ID 2");
@@ -137,8 +137,8 @@ public class DbContextSaverTests
         Assert.Equal(2, context.Ents.Count());
         Assert.True(context.Ents.All(e => e.Id != "Test ID 2"));
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(Helpers.FixVersion(DELETE_JSON), context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(DELETE_JSON), context.SalusSaves.Single().UpdateJson);
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public class DbContextSaverTests
         Assert.Equal("Test ID", context.Ents.Single().Id);
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
-        Assert.Equal(0, context.SalusDataChanges.Count());
+        Assert.Equal(0, context.SalusSaves.Count());
     }
 
     [Fact]
@@ -197,7 +197,7 @@ public class DbContextSaverTests
             Name = "Test Name"
         });
         context.SaveChanges();
-        context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
+        context.Database.ExecuteSql($"DELETE FROM SalusSaves");
 
         // Act
         var save = JsonConvert.DeserializeObject<Save>(Helpers.FixVersion(UPDATE_JSON))!;
@@ -208,7 +208,7 @@ public class DbContextSaverTests
         Assert.Equal("Test Name 2", context.Ents.Single(e => e.Id == "Test ID 2").Name);
         Assert.True(context.Ents.Where(e => e.Id != "Test ID 2").All(e => e.Name == "Test Name"));
 
-        Assert.Equal(0, context.SalusDataChanges.Count());
+        Assert.Equal(0, context.SalusSaves.Count());
     }
 
     [Fact]
@@ -241,7 +241,7 @@ public class DbContextSaverTests
             Name = "Test Name"
         });
         context.SaveChanges();
-        context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
+        context.Database.ExecuteSql($"DELETE FROM SalusSaves");
 
         // Act
         var save = JsonConvert.DeserializeObject<Save>(Helpers.FixVersion(DELETE_JSON))!;
@@ -251,7 +251,7 @@ public class DbContextSaverTests
         Assert.Equal(2, context.Ents.Count());
         Assert.True(context.Ents.All(e => e.Id != "Test ID 2"));
 
-        Assert.Equal(0, context.SalusDataChanges.Count());
+        Assert.Equal(0, context.SalusSaves.Count());
     }
 
 
@@ -284,13 +284,13 @@ public class DbContextSaverTests
         Assert.Equal(2, result);
         Assert.Equal(2, context.Ents.Count());
 
-        Assert.Equal(1, context.SalusDataChanges.Count());
+        Assert.Equal(1, context.SalusSaves.Count());
 #pragma warning disable xUnit2017 // Do not use Contains() to check if a value exists in a collection
         // We are not asserting that an expected value exists in a collection
         // We are asserting that an expected list of values includes the actual value
         // This is because the order of the two records in the JSON does not matter
         Assert.True(new[] { Helpers.FixVersion(AUTO_GENERATE_JSON_1), Helpers.FixVersion(AUTO_GENERATE_JSON_2) }
-                    .Contains(context.SalusDataChanges.Single().UpdateJson));
+                    .Contains(context.SalusSaves.Single().UpdateJson));
 #pragma warning restore xUnit2017 // Do not use Contains() to check if a value exists in a collection
     }
 }

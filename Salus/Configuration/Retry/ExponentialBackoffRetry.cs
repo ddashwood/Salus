@@ -1,4 +1,4 @@
-﻿using Salus.Models;
+﻿using Salus.Models.Entities;
 
 namespace Salus.Configuration.Retry;
 
@@ -15,7 +15,7 @@ public class ExponentialBackoffRetry : IRetryStrategy
         MaxDelayMilliseconds = maxDelayMilliseconds;
     }
 
-    public DateTime GetNextAttemptTime(SalusUpdateEntity update)
+    public DateTime GetNextAttemptTime(SalusSaveEntity update)
     {
         var interval = InitialDelayMilliseconds * Math.Pow(Multiplier, update.FailedMessageSendAttempts);
 

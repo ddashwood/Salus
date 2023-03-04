@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Salus.Idempotency;
 using Salus.Messaging;
-using Salus.Models;
 using Salus.Models.Changes;
+using Salus.Models.Entities;
 using Salus.Saving;
 using System.Diagnostics.CodeAnalysis;
 
@@ -56,7 +56,7 @@ internal class SalusCore : ISalus, ISalusCore
 
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SalusUpdateEntity>(e =>
+        modelBuilder.Entity<SalusSaveEntity>(e =>
         {
             e.HasIndex(u => new { u.CompletedDateTimeUtc, u.NextMessageSendAttemptUtc });
         });
@@ -218,23 +218,23 @@ internal class SalusCore : ISalus, ISalusCore
         {
             change.CompleteAfterSave();
         }
-        var entity = new SalusUpdateEntity(save);
+        var entity = new SalusSaveEntity(save);
         // _dbContext and _salusContext point to the same context object
-        _salusContext.SalusDataChanges.Add(entity);
+        _salusContext.SalusSaves.Add(entity);
     }
 
 
     public void SendMessages(Save save)
     {
         CheckInitialised();
-        var saveEntity = _salusContext.SalusDataChanges.SingleOrDefault(s => s.Id == save.Id);
+        var saveEntity = _salusContext.SalusSaves.SingleOrDefault(s => s.Id == save.Id);
         _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
     }
 
     public async Task SendMessageAsync(Save save)
     {
         CheckInitialised();
-        var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id).ConfigureAwait(false);
+        var saveEntity = await _salusContext.SalusSaves.SingleOrDefaultAsync(s => s.Id == save.Id).ConfigureAwait(false);
         await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext).ConfigureAwait(false);
     }
 }
