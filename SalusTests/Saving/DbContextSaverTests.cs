@@ -8,12 +8,12 @@ namespace SalusTests.Saving;
 
 public class DbContextSaverTests
 {
-    private const string ADD_JSON = """{"Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}]}""";
-    private const string UPDATE_JSON = """{"Changes":[{"ChangeType":1,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
-    private const string DELETE_JSON = """{"Changes":[{"ChangeType":2,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":null,"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
+    private const string ADD_JSON = """{"Version":"TBC","Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}]}""";
+    private const string UPDATE_JSON = """{"Version":"TBC","Changes":[{"ChangeType":1,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
+    private const string DELETE_JSON = """{"Version":"TBC","Changes":[{"ChangeType":2,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":null,"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
 
-    private const string AUTO_GENERATE_JSON_1 = """{"Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":1},{"Name":"Name","Value":"Test Name 1"}],"PrimaryKeyFields":[{"Name":"Id","Value":1}]},{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":2},{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":2}]}]}""";
-    private const string AUTO_GENERATE_JSON_2 = """{"Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":2},{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":2}]},{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":1},{"Name":"Name","Value":"Test Name 1"}],"PrimaryKeyFields":[{"Name":"Id","Value":1}]}]}""";
+    private const string AUTO_GENERATE_JSON_1 = """{"Version":"TBC","Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":1},{"Name":"Name","Value":"Test Name 1"}],"PrimaryKeyFields":[{"Name":"Id","Value":1}]},{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":2},{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":2}]}]}""";
+    private const string AUTO_GENERATE_JSON_2 = """{"Version":"TBC","Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":2},{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":2}]},{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":1},{"Name":"Name","Value":"Test Name 1"}],"PrimaryKeyFields":[{"Name":"Id","Value":1}]}]}""";
 
     [Fact]
     public void AddSaveChangesTest()
@@ -45,7 +45,7 @@ public class DbContextSaverTests
         Assert.Equal("Test Name", context.Ents.Single().Name);
 
         Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(ADD_JSON, context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusDataChanges.Single().UpdateJson);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class DbContextSaverTests
         Assert.True(context.Ents.Where(e => e.Id != "Test ID 2").All(e => e.Name == "Test Name"));
 
         Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(UPDATE_JSON, context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(Helpers.FixVersion(UPDATE_JSON), context.SalusDataChanges.Single().UpdateJson);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class DbContextSaverTests
         Assert.True(context.Ents.All(e => e.Id != "Test ID 2"));
 
         Assert.Equal(1, context.SalusDataChanges.Count());
-        Assert.Equal(DELETE_JSON, context.SalusDataChanges.Single().UpdateJson);
+        Assert.Equal(Helpers.FixVersion(DELETE_JSON), context.SalusDataChanges.Single().UpdateJson);
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
 
         // Act
-        var save = JsonConvert.DeserializeObject<Save>(UPDATE_JSON)!;
+        var save = JsonConvert.DeserializeObject<Save>(Helpers.FixVersion(UPDATE_JSON))!;
         context.Apply(save);
 
         // Assert
@@ -244,7 +244,7 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"DELETE FROM SalusDataChanges");
 
         // Act
-        var save = JsonConvert.DeserializeObject<Save>(DELETE_JSON)!;
+        var save = JsonConvert.DeserializeObject<Save>(Helpers.FixVersion(DELETE_JSON))!;
         context.Apply(save);
 
         // Assert
@@ -289,7 +289,8 @@ public class DbContextSaverTests
         // We are not asserting that an expected value exists in a collection
         // We are asserting that an expected list of values includes the actual value
         // This is because the order of the two records in the JSON does not matter
-        Assert.True(new[] { AUTO_GENERATE_JSON_1, AUTO_GENERATE_JSON_2 }.Contains(context.SalusDataChanges.Single().UpdateJson));
+        Assert.True(new[] { Helpers.FixVersion(AUTO_GENERATE_JSON_1), Helpers.FixVersion(AUTO_GENERATE_JSON_2) }
+                    .Contains(context.SalusDataChanges.Single().UpdateJson));
 #pragma warning restore xUnit2017 // Do not use Contains() to check if a value exists in a collection
     }
 }

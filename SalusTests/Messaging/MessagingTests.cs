@@ -8,7 +8,7 @@ namespace SalusTests.Messaging;
 
 public class MessagingTests
 {
-    private const string ADD_JSON = """{"Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}]}""";
+    private const string ADD_JSON = """{"Version":"TBC","Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}]}""";
 
     [Fact]
     public void MessageTest()
@@ -37,7 +37,7 @@ public class MessagingTests
         var result = context.SaveChanges();
 
         // Assert
-        mockSender.Verify(m => m.Send(ADD_JSON), Times.Once);
+        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Once);
         var change = context.SalusDataChanges.Single();
         Assert.NotNull(change.CompletedDateTimeUtc);
         Assert.Equal(0, change.FailedMessageSendAttempts);
@@ -110,7 +110,7 @@ public class MessagingTests
         }
 
         // Assert
-        mockSender.Verify(m => m.Send(ADD_JSON), Times.Once);
+        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Once);
         Assert.NotNull(context.SalusDataChanges.Single().CompletedDateTimeUtc);
         var change = context.SalusDataChanges.Single();
         Assert.NotNull(change.CompletedDateTimeUtc);
