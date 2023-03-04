@@ -34,7 +34,7 @@ public class DbContextAsyncSaverTests
             Name = "Test Name"
         });
 
-        var result = await context.SaveChangesAsync();
+        var result = await context.SaveChangesAsync().ConfigureAwait(false);
 
         // Assert
         Assert.Equal(1, result);
@@ -72,7 +72,7 @@ public class DbContextAsyncSaverTests
             Name = "Test Name"
         });
 
-        var result = await context.SaveChangesAsync();
+        var result = await context.SaveChangesAsync().ConfigureAwait(false);
 
         // Assert
         Assert.Equal(1, result);
@@ -107,7 +107,7 @@ public class DbContextAsyncSaverTests
 
         // Act
         int result;
-        using (var tran = await context.Database.BeginTransactionAsync())
+        using (var tran = await context.Database.BeginTransactionAsync().ConfigureAwait(false))
         {
             context.Ents.Add(new NoKeyAnnotationStringIdEntity
             {
@@ -115,8 +115,8 @@ public class DbContextAsyncSaverTests
                 Name = "Test Name"
             });
 
-            result = await context.SaveChangesAsync();
-            await tran.CommitAsync();
+            result = await context.SaveChangesAsync().ConfigureAwait(false);
+            await tran.CommitAsync().ConfigureAwait(false);
         }
 
         // Assert

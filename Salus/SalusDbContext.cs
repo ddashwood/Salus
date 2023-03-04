@@ -48,11 +48,11 @@ public class SalusDbContext : DbContext, ISalusDbContext
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-        await SaveChangesAsync(true, cancellationToken);
+        await SaveChangesAsync(true, cancellationToken).ConfigureAwait(false);
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken, base.SaveChangesAsync);
+        return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken, base.SaveChangesAsync).ConfigureAwait(false);
     }
 
     internal void Apply(Save save)

@@ -49,7 +49,7 @@ internal class QueueProcessorService<TContext> : IHostedService where TContext :
             using (var scope = _scopeFactory.CreateScope())
             {
                 var queueProcessor = scope.ServiceProvider.GetRequiredService<IQueueProcessor<TContext>>();
-                await queueProcessor.ProcessQueue();
+                await queueProcessor.ProcessQueue().ConfigureAwait(false);
             }
         }
         catch (Exception ex)

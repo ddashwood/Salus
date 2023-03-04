@@ -26,8 +26,8 @@ internal class SalusDbContextTransaction : IDbContextTransaction
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        await _wrappedTransaction.CommitAsync(cancellationToken);
-        await OnCommittingAsync();
+        await _wrappedTransaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        await OnCommittingAsync().ConfigureAwait(false);
     }
 
     public void Dispose()
@@ -39,7 +39,7 @@ internal class SalusDbContextTransaction : IDbContextTransaction
     public async ValueTask DisposeAsync()
     {
         OnRollingBack();
-        await _wrappedTransaction.DisposeAsync();
+        await _wrappedTransaction.DisposeAsync().ConfigureAwait(false);
     }
 
     public void Rollback()
@@ -51,7 +51,7 @@ internal class SalusDbContextTransaction : IDbContextTransaction
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
     {
         OnRollingBack();
-        await _wrappedTransaction.RollbackAsync(cancellationToken);
+        await _wrappedTransaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -72,7 +72,7 @@ internal class SalusDbContextTransaction : IDbContextTransaction
     {
         foreach (var save in _transactionSaves)
         {
-            await _salus.SendMessageAsync(save);
+            await _salus.SendMessageAsync(save).ConfigureAwait(false);
         }
     }
     public void OnRollingBack()

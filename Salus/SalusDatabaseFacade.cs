@@ -29,7 +29,7 @@ internal class SalusDatabaseFacade : DatabaseFacade
     }
     public override async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        var tran = await _wrappedFacade.BeginTransactionAsync(cancellationToken);
+        var tran = await _wrappedFacade.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         _currentTransaction = new SalusDbContextTransaction(tran, _salus);
         return _currentTransaction;
     }
@@ -48,8 +48,8 @@ internal class SalusDatabaseFacade : DatabaseFacade
     }
     public override async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        await _wrappedFacade.CommitTransactionAsync(cancellationToken);
-        await OnCommittingAsync();
+        await _wrappedFacade.CommitTransactionAsync(cancellationToken).ConfigureAwait(false);
+        await OnCommittingAsync().ConfigureAwait(false);
     }
     public override IExecutionStrategy CreateExecutionStrategy()
     {
@@ -104,7 +104,7 @@ internal class SalusDatabaseFacade : DatabaseFacade
     public override async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
         OnRollingBack();
-        await _wrappedFacade.RollbackTransactionAsync(cancellationToken);
+        await _wrappedFacade.RollbackTransactionAsync(cancellationToken).ConfigureAwait(false);
     }
     public override string ToString()
     {
@@ -139,7 +139,7 @@ internal class SalusDatabaseFacade : DatabaseFacade
     {
         if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
         {
-            await salusTransaction.OnCommittingAsync();
+            await salusTransaction.OnCommittingAsync().ConfigureAwait(false);
         }
     }
     private void OnRollingBack()

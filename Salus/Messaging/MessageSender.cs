@@ -64,7 +64,7 @@ internal class MessageSender : IMessageSender
         {
             if (_options.SenderAsync != null)
             {
-                await _options.SenderAsync(message);
+                await _options.SenderAsync(message).ConfigureAwait(false); ;
                 return;
             }
             _options.Sender?.Invoke(message);
@@ -74,7 +74,7 @@ internal class MessageSender : IMessageSender
                 if (entity != null)
                 {
                     entity.CompletedDateTimeUtc = DateTime.UtcNow;
-                    await context.SaveChangesAsync();
+                    await context.SaveChangesAsync().ConfigureAwait(false); ;
                 }
             }
             catch (Exception saveException)
@@ -93,7 +93,7 @@ internal class MessageSender : IMessageSender
                     entity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
                     entity.NextMessageSendAttemptUtc = _options.RetryStrategy.GetNextAttemptTime(entity);
                     entity.FailedMessageSendAttempts++;
-                    await context.SaveChangesAsync();
+                    await context.SaveChangesAsync().ConfigureAwait(false); ;
                 }
             }
             catch (Exception saveException)

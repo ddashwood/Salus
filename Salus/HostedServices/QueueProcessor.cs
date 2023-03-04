@@ -26,7 +26,7 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
         var queue = await  _context.SalusDataChanges
             .Where(c => c.CompletedDateTimeUtc == null
                      && DateTime.UtcNow >= c.NextMessageSendAttemptUtc)
-            .ToListAsync();
+            .ToListAsync().ConfigureAwait(false);
 
         _logger.LogInformation($"Queue contains {queue.Count} items");
 
@@ -34,7 +34,7 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
         {
             try
             {
-                await _messageSender.SendAsync(dataChange.UpdateJson, dataChange, _context);
+                await _messageSender.SendAsync(dataChange.UpdateJson, dataChange, _context).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

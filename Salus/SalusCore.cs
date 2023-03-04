@@ -135,7 +135,7 @@ internal class SalusCore : ISalus, ISalusCore
     {
         CheckInitialised();
 
-        var result = await BuildPreliminarySaveAsync(cancellationToken);
+        var result = await BuildPreliminarySaveAsync(cancellationToken).ConfigureAwait(false);
 
         IDbContextTransaction? tran = null;
         try
@@ -145,21 +145,21 @@ internal class SalusCore : ISalus, ISalusCore
                 // If we're not already in a transaction, we create one here.
                 // If we *are* already in a transaction, that transaction will be sufficient
 
-                tran = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+                tran = await _dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            await baseSaveChanges(acceptAllChangesOnSuccess, cancellationToken);
+            await baseSaveChanges(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 
             if (result != null)
             {
-                await CompleteSaveAsync(result);
+                await CompleteSaveAsync(result).ConfigureAwait(false);
             }
 
-            await (tran?.CommitAsync() ?? Task.CompletedTask);
+            await (tran?.CommitAsync() ?? Task.CompletedTask).ConfigureAwait(false);
         }
         catch
         {
-            await (tran?.RollbackAsync() ?? Task.CompletedTask);
+            await (tran?.RollbackAsync() ?? Task.CompletedTask).ConfigureAwait(false);
             throw;
         }
         finally
@@ -175,7 +175,7 @@ internal class SalusCore : ISalus, ISalusCore
 
         if (_dbContext.Database.CurrentTransaction == null)
         {
-            await SendMessageAsync(result);
+            await SendMessageAsync(result).ConfigureAwait(false);
         }
         else
         {
@@ -193,7 +193,7 @@ internal class SalusCore : ISalus, ISalusCore
     private async Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken)
     {
         CheckInitialised();
-        return await _saver.BuildPreliminarySaveAsync(cancellationToken, _dbContext);
+        return await _saver.BuildPreliminarySaveAsync(cancellationToken, _dbContext).ConfigureAwait(false);
     }
 
     private void CompleteSave(Save save)
@@ -207,7 +207,7 @@ internal class SalusCore : ISalus, ISalusCore
     {
         CheckInitialised();
         CompleteSaveCommon(save);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
     private void CompleteSaveCommon(Save save)
@@ -234,7 +234,7 @@ internal class SalusCore : ISalus, ISalusCore
     public async Task SendMessageAsync(Save save)
     {
         CheckInitialised();
-        var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id);
-        await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
+        var saveEntity = await _salusContext.SalusDataChanges.SingleOrDefaultAsync(s => s.Id == save.Id).ConfigureAwait(false);
+        await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext).ConfigureAwait(false);
     }
 }
