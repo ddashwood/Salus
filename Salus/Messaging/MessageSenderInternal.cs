@@ -4,22 +4,29 @@ using Salus.Models.Entities;
 
 namespace Salus.Messaging;
 
-internal class MessageSender : IMessageSender
+internal class MessageSenderInternal : IMessageSenderInternal
 {
     private readonly SalusOptions _options;
-    private readonly ILogger<MessageSender> _logger;
+    private readonly ILogger<MessageSenderInternal> _logger;
+    private readonly IEnumerable<IMessageSender> _messageSenders;
+    private readonly IEnumerable<IAsyncMessageSender> _asyncMessageSenders;
 
-    public MessageSender(SalusOptions options, ILogger<MessageSender> logger)
+    public MessageSenderInternal(SalusOptions options, ILogger<MessageSenderInternal> logger, IEnumerable<IMessageSender> messageSenders, IEnumerable<IAsyncMessageSender> asyncMessageSenders)
     {
         _options = options;
         _logger = logger;
+        _messageSenders = messageSenders;
+        _asyncMessageSenders = asyncMessageSenders;
     }
 
     public void Send(string message, SalusSaveEntity? entity, DbContext context)
     {
         try
         {
-            _options.Sender?.Invoke(message);
+            foreach (var sender in _messageSenders)
+            {
+                sender.Send(message);
+            }
 
             try
             {
@@ -62,12 +69,20 @@ internal class MessageSender : IMessageSender
     {
         try
         {
-            if (_options.SenderAsync != null)
+            if (_asyncMessageSenders.Any())
             {
-                await _options.SenderAsync(message).ConfigureAwait(false); ;
-                return;
+                foreach (var sender in _asyncMessageSenders)
+                {
+                    await sender.SendAsync(message).ConfigureAwait(false);
+                }
             }
-            _options.Sender?.Invoke(message);
+            else
+            {
+                foreach (var sender in _messageSenders)
+                {
+                    sender.Send(message);
+                }
+            }
 
             try
             {

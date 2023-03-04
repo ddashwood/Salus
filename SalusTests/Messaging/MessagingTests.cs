@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using Salus;
+using Salus.Messaging;
 using SalusTests.TestDataStructures.Contexts;
 using SalusTests.TestDataStructures.Entities;
 
@@ -14,10 +15,8 @@ public class MessagingTests
     public void MessageTest()
     {
         // Arrange
-        var mockSender = new Mock<ITestMessageSender>();
-
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(mockSender.Object.Send));
+        var mockSender = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -48,10 +47,8 @@ public class MessagingTests
     public void MessageWithRollbackTest()
     {
         // Arrange
-        var mockSender = new Mock<ITestMessageSender>();
-
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(mockSender.Object.Send));
+        var mockSender = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -82,10 +79,8 @@ public class MessagingTests
     public void MessageWithCommitTest()
     {
         // Arrange
-        var mockSender = new Mock<ITestMessageSender>();
-
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(mockSender.Object.Send));
+        var mockSender = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -122,8 +117,9 @@ public class MessagingTests
     public void MessageWithFailedMessageSendTest()
     {
         // Arrange
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(_ => throw new Exception()));
+        var mockSender = new Mock<IMessageSender>();
+        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(new Exception());
+        var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")

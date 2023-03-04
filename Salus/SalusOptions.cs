@@ -8,14 +8,6 @@ namespace Salus;
 public class SalusOptions
 {
     /// <summary>
-    /// The Action to be called to send a message synchronously.
-    /// </summary>
-    public Action<string>? Sender { get; private set; }
-    /// <summary>
-    /// The Func to be called to send a message asynchronously.
-    /// </summary>
-    public Func<string, Task>? SenderAsync { get; private set; }
-    /// <summary>
     /// A retry strategy when a message fails to send. Currently available strategies include
     /// <see cref="ConstantRetry"/> and <see cref="ExponentialBackoffRetry"/>.
     /// </summary>
@@ -25,27 +17,6 @@ public class SalusOptions
     /// </summary>
     public int RetryQueueProcessIntervalMilliseconds { get; private set; } = 500;
 
-    /// <summary>
-    /// Sets the Action to be called to send a message synchronously.
-    /// </summary>
-    /// <param name="sender">The Action to be called to send a message synchronously.</param>
-    /// <returns>The <see cref="SalusOptions"/ instance.></returns>
-    public SalusOptions SetMessageSender(Action<string> sender)
-    {
-        Sender = sender;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the Func to be called to send a message asynchronously.
-    /// </summary>
-    /// <param name="senderAsync">The Func to be called to send a message asynchronously.</param>
-    /// <returns>The <see cref="SalusOptions"/ instance.></returns>
-    public SalusOptions SetAsyncMessageSender(Func<string, Task> senderAsync)
-    {
-        SenderAsync = senderAsync;
-        return this;
-    }
 
     /// <summary>
     /// Sets the retry strategy when a message fails to send. Currently available strategies include.

@@ -26,7 +26,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ISalus, SalusCore>();
         services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
         services.AddTransient<IDbContextSaver, DbContextSaver>();
-        services.AddTransient<IMessageSender, MessageSender>();
+        services.AddTransient<IMessageSenderInternal, MessageSenderInternal>();
 
         services.AddScoped<IQueueProcessor<TContext>, QueueProcessor<TContext>>();
 

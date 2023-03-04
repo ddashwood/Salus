@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using Salus;
+using Salus.Messaging;
 using SalusTests.TestDataStructures.Contexts;
 using SalusTests.TestDataStructures.Entities;
 
@@ -14,10 +15,8 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<ITestMessageSender>();
-
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(mockSender.Object.Send));
+        var mockSender = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -51,11 +50,9 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesWithAsyncSenderAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<ITestMessageSender>();
-
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(mockSender.Object.Send)
-            .SetAsyncMessageSender(mockSender.Object.SendAsync));
+        var mockSender = new Mock<IMessageSender>();
+        var mockAsyncSender = new Mock<IAsyncMessageSender>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object, mockAsyncSender.Object);
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -83,18 +80,16 @@ public class DbContextAsyncSaverTests
         Assert.Equal(1, context.SalusSaves.Count());
         Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
         mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Never);
-        mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
+        mockAsyncSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
 
     [Fact]
     public async Task AddSaveChangesWithCommitAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<ITestMessageSender>();
-
-        var salus = Helpers.BuildTestSalus(new SalusOptions()
-            .SetMessageSender(mockSender.Object.Send)
-            .SetAsyncMessageSender(mockSender.Object.SendAsync));
+        var mockSender = new Mock<IMessageSender>();
+        var mockAsyncSender = new Mock<IAsyncMessageSender>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object, mockAsyncSender.Object);
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -128,6 +123,6 @@ public class DbContextAsyncSaverTests
         Assert.Equal(1, context.SalusSaves.Count());
         Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
         mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Never);
-        mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
+        mockAsyncSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
 }

@@ -9,6 +9,8 @@ internal class ExampleParent
 {
     public ExampleParent(ExampleDbContext context)
     {
+        context.ExampleData.Add(new ExampleData { Data = "Example" });
+        context.SaveChanges();
     }
 
     public async Task Run()

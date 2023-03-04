@@ -18,7 +18,7 @@ internal class SalusCore : ISalus, ISalusCore
 {
     private readonly IDbContextIdempotencyChecker _idempotencyChecker;
     private readonly IDbContextSaver _saver;
-    private readonly IMessageSender _messageSender;
+    private readonly IMessageSenderInternal _messageSender;
     private readonly ILogger<SalusCore>? _logger;
 
     private ISalusDbContext? _salusContext;
@@ -38,7 +38,7 @@ internal class SalusCore : ISalus, ISalusCore
     public SalusCore(
         IDbContextIdempotencyChecker idempotencyChecker,
         IDbContextSaver saver,
-        IMessageSender messageSender,
+        IMessageSenderInternal messageSender,
         SalusOptions? options,
         ILogger<SalusCore>? logger)
     {

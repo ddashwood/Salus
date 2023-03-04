@@ -4,7 +4,9 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Salus;
 using Salus.Configuration.Retry;
+using Salus.Messaging;
 using SalusExampleParent;
+using SalusExampleParent.Messaging;
 
 using IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
@@ -12,11 +14,12 @@ using IHost host = Host.CreateDefaultBuilder()
         services.AddSalus<ExampleDbContext>(options =>
         {
             options
-                //.SetMessageSender(message => throw new Exception("*** Example Failure ***"))
-                .SetMessageSender(message => Console.WriteLine("Sending: " + JsonConvert.SerializeObject(message)))
                 .SetRetryQueueProcessInterval(100)
                 .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
         });
+        services.AddTransient<IMessageSender, ConsoleMessageSender>();
+        //services.AddTransient<IMessageSender, ExceptionMessageSender>();
+
         services.AddScoped<ExampleParent>();
         services.AddDbContext<ExampleDbContext>(options =>
         {

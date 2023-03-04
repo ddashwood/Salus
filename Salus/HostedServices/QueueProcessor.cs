@@ -8,9 +8,9 @@ internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TConte
 {
     private readonly TContext _context;
     private readonly ILogger<QueueProcessor<TContext>> _logger;
-    private readonly IMessageSender _messageSender;
+    private readonly IMessageSenderInternal _messageSender;
 
-    public QueueProcessor(TContext context, ILogger<QueueProcessor<TContext>> logger, IMessageSender messageSender)
+    public QueueProcessor(TContext context, ILogger<QueueProcessor<TContext>> logger, IMessageSenderInternal messageSender)
     {
         _context = context;
         _logger = logger;

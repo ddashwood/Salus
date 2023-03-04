@@ -15,11 +15,8 @@ public class QueueProcessorTests
     public async Task ProcessQueuedItemTest()
     {
         // Arrange
-        var senderMock = new Mock<ITestMessageSender>();
-        var salusOptions = new SalusOptions()
-            .SetMessageSender(senderMock.Object.Send);
-
-        var salus = Helpers.BuildTestSalus(out MessageSender messageSender, salusOptions);
+        var senderMock = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(out MessageSenderInternal messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -46,11 +43,8 @@ public class QueueProcessorTests
     public async Task ProcessCompletedQueuedItemTest()
     {
         // Arrange
-        var senderMock = new Mock<ITestMessageSender>();
-        var salusOptions = new SalusOptions()
-            .SetMessageSender(senderMock.Object.Send);
-
-        var salus = Helpers.BuildTestSalus(out MessageSender messageSender, salusOptions);
+        var senderMock = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(out MessageSenderInternal messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -77,11 +71,8 @@ public class QueueProcessorTests
     public async Task ProcessFutureQueuedItemTest()
     {
         // Arrange
-        var senderMock = new Mock<ITestMessageSender>();
-        var salusOptions = new SalusOptions()
-            .SetMessageSender(senderMock.Object.Send);
-
-        var salus = Helpers.BuildTestSalus(out MessageSender messageSender, salusOptions);
+        var senderMock = new Mock<IMessageSender>();
+        var salus = Helpers.BuildTestSalus(out MessageSenderInternal messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
