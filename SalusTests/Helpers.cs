@@ -12,11 +12,16 @@ internal static class Helpers
 {
     public static SalusCore BuildTestSalus(SalusOptions? options = null)
     {
+        return BuildTestSalus(out MessageSender _, options);
+    }
+
+    public static SalusCore BuildTestSalus(out MessageSender messageSender, SalusOptions? options = null)
+    {
         options = options ?? new SalusOptions();
 
         var checker = new DbContextIdempotencyChecker();
         var saver = new DbContextSaver();
-        var messageSender = new MessageSender(options, new Mock<ILogger<MessageSender>>().Object);
+        messageSender = new MessageSender(options, new Mock<ILogger<MessageSender>>().Object);
         return new SalusCore(checker, saver, messageSender, new SalusOptions(), new Mock<ILogger<SalusCore>>().Object);
     }
 

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Salus.Models.Changes;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace Salus.Models;
 
@@ -18,6 +19,26 @@ public class SalusUpdateEntity
     // For Entity Framework
     private SalusUpdateEntity()
     {
+    }
+
+    // For testing
+    internal SalusUpdateEntity(string id, DateTime updateDateTime, DateTime? completedDataTime,
+        int failedAttempts, DateTime? lastFailedSend, DateTime? nextSend, string message)
+    {
+        StackTrace stackTrace = new StackTrace();
+        var callerAssembly = stackTrace.GetFrame(1)!.GetMethod()!.DeclaringType!.Assembly;
+        if (callerAssembly.GetName().Name != "SalusTests")
+        {
+            throw new InvalidOperationException("Attempt to use a constructor that is designed to only be used from within tests");
+        }
+
+        Id = id;
+        UpdateDateTimeUtc = updateDateTime;
+        CompletedDateTimeUtc = completedDataTime;
+        FailedMessageSendAttempts = failedAttempts;
+        LastFailedMessageSendAttemptUtc = lastFailedSend;
+        NextMessageSendAttemptUtc = nextSend;
+        UpdateJson = message;
     }
 
     internal SalusUpdateEntity(Save save)

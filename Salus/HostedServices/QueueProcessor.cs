@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Salus.Messaging;
-using Salus.Models.Changes;
 
 namespace Salus.HostedServices;
 
