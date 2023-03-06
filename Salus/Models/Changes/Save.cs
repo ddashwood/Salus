@@ -20,6 +20,8 @@ internal class Save<TKey>
             var id = SequentialGuidGenerator.Instance.NewGuid().ToString();
             GetType().GetProperty(nameof(Id))!.SetValue(this, id);
         }
+        // Other supported types are integer or Guid types, all of which are set in the database by default
+
         Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
         _changes = changes;
     }

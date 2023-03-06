@@ -5,6 +5,9 @@ using Salus.Models.Entities;
 
 namespace Salus;
 
+/// <summary>
+/// A DbContext class that can be used as the base for creating Salus DbContexts.
+/// </summary>
 public class SalusDbContext : SalusDbContext<int>
 {
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
@@ -19,8 +22,10 @@ public class SalusDbContext : SalusDbContext<int>
 }
 
 /// <summary>
-/// A DbContext class that can be used as the base for creating Salus DbContexts.
+/// A DbContext class that can be used as the base for creating Salus DbContexts with different
+/// key types. Intended for internal use only.
 /// </summary>
+/// <typeparam name="TKey">The data type of the key field. Support values are int/long/string/Guid.</typeparam>
 public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
 {
     private readonly ISalusCore<TKey> _salus;

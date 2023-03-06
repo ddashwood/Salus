@@ -15,22 +15,22 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The Service Collection.</param>
     /// <param name="options">A <see cref="SalusOptions"/> object.</param>
     /// <returns></returns>
-    public static IServiceCollection AddSalus<TContext, TKey>(this IServiceCollection services, Action<SalusOptions<TKey>> options) where TContext : SalusDbContext<TKey>
+    public static IServiceCollection AddSalus<TContext>(this IServiceCollection services, Action<SalusOptions<int>> options) where TContext : SalusDbContext
     {
-        var optionsObject = new SalusOptions<TKey>();
+        var optionsObject = new SalusOptions<int>();
         options(optionsObject);
 
         // Salus services are mostly transient - this ensures that each
         // DbContext instance gets its own Salus instance
         services.AddSingleton(optionsObject);
-        services.AddTransient<ISalus<TKey>, SalusCore<TKey>>();
+        services.AddTransient<ISalus<int>, SalusCore<int>>();
         services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
-        services.AddTransient<IDbContextSaver<TKey>, DbContextSaver<TKey>>();
-        services.AddTransient<IMessageSenderInternal<TKey>, MessageSenderInternal<TKey>>();
+        services.AddTransient<IDbContextSaver<int>, DbContextSaver<int>>();
+        services.AddTransient<IMessageSenderInternal<int>, MessageSenderInternal<int>>();
 
-        services.AddScoped<IQueueProcessor<TContext, TKey>, QueueProcessor<TContext, TKey>>();
+        services.AddScoped<IQueueProcessor<TContext, int>, QueueProcessor<TContext, int>>();
 
-        services.AddHostedService<QueueProcessorService<TContext, TKey>>();
+        services.AddHostedService<QueueProcessorService<TContext, int>>();
 
         return services;
     }

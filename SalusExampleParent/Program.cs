@@ -10,7 +10,7 @@ using SalusExampleParent.Messaging;
 using IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
-        services.AddSalus<ExampleDbContext, int>(options =>
+        services.AddSalus<ExampleDbContext>(options =>
         {
             options
                 .SetRetryQueueProcessInterval(100)
