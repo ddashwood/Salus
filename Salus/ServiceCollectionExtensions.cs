@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Salus.HostedServices;
+using Salus.QueueProcessing;
 using Salus.Idempotency;
 using Salus.Messaging;
 using Salus.Saving;
@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IMessageSenderInternal<int>, MessageSenderInternal<int>>();
 
         services.AddScoped<IQueueProcessor<TContext, int>, QueueProcessor<TContext, int>>();
+        services.AddSingleton<IQueueProcessorSemaphore, QueueProcessorSemaphore>();
 
         services.AddHostedService<QueueProcessorService<TContext, int>>();
 

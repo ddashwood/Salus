@@ -63,7 +63,7 @@ internal interface ISalusCore<TKey>
     /// Sends a message to consumers with details of a <see cref="Save"/>.
     /// </summary>
     /// <param name="save">The Save to communicate to consumers.</param>
-    void SendMessages(Save<TKey> save);
+    void SendMessage(Save<TKey> save);
 
     /// <summary>
     /// Sends a message to consumers with details of a <see cref="Save"/>.

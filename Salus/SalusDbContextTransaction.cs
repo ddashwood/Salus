@@ -69,7 +69,7 @@ internal class SalusDbContextTransaction<TKey> : IDbContextTransaction
     {
         foreach (var save in _transactionSaves)
         {
-            _salus.SendMessages(save);
+            _salus.SendMessage(save);
         }
     }
 

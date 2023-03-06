@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using Salus;
-using Salus.HostedServices;
+using Salus.QueueProcessing;
 using Salus.Messaging;
 using Salus.Models.Entities;
 using SalusTests.TestDataStructures.Contexts;
@@ -23,7 +23,9 @@ public class QueueProcessorTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, contextOptions);
-        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender, semaphoreMock.Object);
 
         context.CreateDatabaseTables();
 
@@ -51,7 +53,9 @@ public class QueueProcessorTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, contextOptions);
-        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender, semaphoreMock.Object);
 
         context.CreateDatabaseTables();
 
@@ -79,7 +83,9 @@ public class QueueProcessorTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, contextOptions);
-        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender, semaphoreMock.Object);
 
         context.CreateDatabaseTables();
 

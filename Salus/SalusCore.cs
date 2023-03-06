@@ -6,6 +6,7 @@ using Salus.Idempotency;
 using Salus.Messaging;
 using Salus.Models.Changes;
 using Salus.Models.Entities;
+using Salus.QueueProcessing;
 using Salus.Saving;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -21,10 +22,11 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     private readonly IDbContextSaver<TKey> _saver;
     private readonly IMessageSenderInternal<TKey> _messageSender;
     private readonly ILogger<SalusCore<TKey>>? _logger;
+    private readonly IQueueProcessorSemaphore _semaphore;
 
     private ISalusDbContext<TKey>? _salusContext;
     private DbContext? _dbContext;
-    
+
     /// <inheritdoc/>
     public SalusOptions<TKey> Options { get; }
 
@@ -36,16 +38,19 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <param name="messageSender">A Message Sender.</param>
     /// <param name="options">The options to be used by this instance.</param>
     /// <param name="logger">A logger.</param>
+    /// <param name="semaphore">A semaphore for accessing the message processing queue</param>
     public SalusCore(
         IDbContextIdempotencyChecker idempotencyChecker,
         IDbContextSaver<TKey> saver,
         IMessageSenderInternal<TKey> messageSender,
         SalusOptions<TKey>? options,
-        ILogger<SalusCore<TKey>>? logger)
+        ILogger<SalusCore<TKey>>? logger,
+        IQueueProcessorSemaphore semaphore)
     {
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);
         ArgumentNullException.ThrowIfNull(messageSender);
+        ArgumentNullException.ThrowIfNull(semaphore);
 
         ValidateGenericType();
 
@@ -54,6 +59,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         _messageSender = messageSender;
         Options = options ?? new SalusOptions<TKey>();
         _logger = logger;
+        _semaphore = semaphore;
     }
 
     private void ValidateGenericType()
@@ -157,7 +163,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
 
         if (_dbContext.Database.CurrentTransaction == null)
         {
-            SendMessages(result);
+            SendMessage(result);
         }
         else
         {
@@ -263,19 +269,51 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     }
 
     /// <inheritdoc/>
-    public void SendMessages(Save<TKey> save)
+    public void SendMessage(Save<TKey> save)
     {
         CheckInitialised();
-        var saveEntity = _salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
-        _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
+        // Only send the message if there is nothing in the queue, and the queue is not being processed
+        // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
+        //if (_semaphore.Start())
+        {
+            try
+            {
+                if (!_salusContext.SalusSaves.Any(c => c.CompletedDateTimeUtc == null
+                                                && DateTime.UtcNow >= c.NextMessageSendAttemptUtc))
+                {
+                    var saveEntity = _salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
+                    _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
+                }
+            }
+            finally
+            {
+                //_semaphore.Stop();
+            }
+        }
     }
 
     /// <inheritdoc/>
     public async Task SendMessageAsync(Save<TKey> save)
     {
         CheckInitialised();
-        var saveEntity = await _salusContext.SalusSaves.SingleOrDefaultAsync(GetEqualsExpression(save.Id)).ConfigureAwait(false);
-        await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext).ConfigureAwait(false);
+        // Only send the message if there is nothing in the queue, and the queue is not being processed
+        // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
+        if (_semaphore.Start())
+        {
+            try
+            {
+                if (!await _salusContext.SalusSaves.AnyAsync(c => c.CompletedDateTimeUtc == null
+                                                && DateTime.UtcNow >= c.NextMessageSendAttemptUtc).ConfigureAwait(false))
+                {
+                    var saveEntity = await _salusContext.SalusSaves.SingleOrDefaultAsync(GetEqualsExpression(save.Id)).ConfigureAwait(false);
+                    await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _semaphore.Stop();
+            }
+        }
     }
 
     private Expression<Func<SalusSaveEntity<TKey>, bool>> GetEqualsExpression(TKey id)

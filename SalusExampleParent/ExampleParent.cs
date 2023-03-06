@@ -14,6 +14,10 @@ internal class ExampleParent
         _context.ExampleData.Add(new ExampleData { Data = "Example" });
         _context.SaveChanges();
 
+        _context.ExampleData.Add(new ExampleData { Data = "Example" });
+        _context.SaveChanges();
+
+
         var ents = _context.SalusSaves.ToList();
 
 

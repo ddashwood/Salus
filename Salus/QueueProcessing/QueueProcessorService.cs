@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Salus.HostedServices;
+namespace Salus.QueueProcessing;
 
 internal class QueueProcessorService<TContext, TKey> : IHostedService where TContext : SalusDbContext<TKey>
 {
