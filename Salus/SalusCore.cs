@@ -57,7 +57,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         _idempotencyChecker = idempotencyChecker;
         _saver = saver;
         _messageSender = messageSender;
-        Options = options ?? new SalusOptions<TKey>();
+        Options = options ?? new SalusOptions<TKey>(null, null);
         _logger = logger;
         _semaphore = semaphore;
     }

@@ -1,4 +1,5 @@
 ﻿using Salus.Configuration.Retry;
+using Salus.Messaging;
 
 namespace Salus;
 
@@ -7,6 +8,9 @@ namespace Salus;
 /// </summary>
 public class SalusOptions<TKey>
 {
+    internal IMessageSender? MessageSender { get; }
+    internal IAsyncMessageSender? AsyncMessageSender { get; }
+
     /// <summary>
     /// A retry strategy when a message fails to send. Currently available strategies include
     /// <see cref="ConstantRetry"/> and <see cref="ExponentialBackoffRetry"/>.
@@ -39,5 +43,11 @@ public class SalusOptions<TKey>
     {
         RetryQueueProcessIntervalMilliseconds = milliseconds;
         return this;
+    }
+
+    internal SalusOptions(IMessageSender? messageSender, IAsyncMessageSender? asyncMessageSender)
+    {
+        MessageSender = messageSender;
+        AsyncMessageSender = asyncMessageSender;
     }
 }

@@ -8,25 +8,18 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
 {
     private readonly SalusOptions<TKey> _options;
     private readonly ILogger<MessageSenderInternal<TKey>> _logger;
-    private readonly IEnumerable<IMessageSender> _messageSenders;
-    private readonly IEnumerable<IAsyncMessageSender> _asyncMessageSenders;
 
-    public MessageSenderInternal(SalusOptions<TKey> options, ILogger<MessageSenderInternal<TKey>> logger, IEnumerable<IMessageSender> messageSenders, IEnumerable<IAsyncMessageSender> asyncMessageSenders)
+    public MessageSenderInternal(SalusOptions<TKey> options, ILogger<MessageSenderInternal<TKey>> logger)
     {
         _options = options;
         _logger = logger;
-        _messageSenders = messageSenders;
-        _asyncMessageSenders = asyncMessageSenders;
     }
 
     public void Send(string message, SalusSaveEntity<TKey>? entity, DbContext context)
     {
         try
         {
-            foreach (var sender in _messageSenders)
-            {
-                sender.Send(message);
-            }
+            _options.MessageSender?.Send(message);
 
             try
             {
@@ -69,19 +62,13 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
     {
         try
         {
-            if (_asyncMessageSenders.Any())
+            if (_options.AsyncMessageSender != null)
             {
-                foreach (var sender in _asyncMessageSenders)
-                {
-                    await sender.SendAsync(message).ConfigureAwait(false);
-                }
+                await _options.AsyncMessageSender.SendAsync(message).ConfigureAwait(false);
             }
             else
             {
-                foreach (var sender in _messageSenders)
-                {
-                    sender.Send(message);
-                }
+                _options.MessageSender?.Send(message);
             }
 
             try

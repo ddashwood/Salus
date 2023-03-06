@@ -2,7 +2,6 @@
 using Salus.Messaging;
 using Salus.Saving;
 using Salus;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Salus.QueueProcessing;
@@ -23,10 +22,10 @@ internal static class Helpers
 
         var checker = new DbContextIdempotencyChecker();
         var saver = new DbContextSaver<int>();
-        messageSenderInternal = new MessageSenderInternal<int>(new SalusOptions<int>(), new Mock<ILogger<MessageSenderInternal<int>>>().Object, messageSenders, asyncMessageSenders);
+        messageSenderInternal = new MessageSenderInternal<int>(new SalusOptions<int>(messageSender, asyncMessageSender), new Mock<ILogger<MessageSenderInternal<int>>>().Object);
         var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
         semaphoreMock.Setup(m => m.Start()).Returns(true);
-        return new SalusCore<int>(checker, saver, messageSenderInternal, new SalusOptions<int>(), new Mock<ILogger<SalusCore<int>>>().Object, semaphoreMock.Object);
+        return new SalusCore<int>(checker, saver, messageSenderInternal, new SalusOptions<int>(messageSender, asyncMessageSender), new Mock<ILogger<SalusCore<int>>>().Object, semaphoreMock.Object);
     }
 
     public static string FixVersion(string json)
