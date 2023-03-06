@@ -47,11 +47,30 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);
         ArgumentNullException.ThrowIfNull(messageSender);
+
+        ValidateGenericType();
+
         _idempotencyChecker = idempotencyChecker;
         _saver = saver;
         _messageSender = messageSender;
         Options = options ?? new SalusOptions<TKey>();
         _logger = logger;
+    }
+
+    private void ValidateGenericType()
+    {
+        var validTypes = new List<Type>
+        {
+            typeof(int),
+            typeof(long),
+            typeof(string),
+            typeof(Guid)
+        };
+
+        if (!validTypes.Contains(typeof(TKey)))
+        {
+            throw new InvalidOperationException("Salus only works with key types of int, long, string and Guid");
+        }
     }
 
     /// <inheritdoc/>
