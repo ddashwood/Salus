@@ -11,7 +11,7 @@ public class SalusOptions<TKey>
     /// A retry strategy when a message fails to send. Currently available strategies include
     /// <see cref="ConstantRetry"/> and <see cref="ExponentialBackoffRetry"/>.
     /// </summary>
-    public IRetryStrategy<TKey> RetryStrategy { get; private set; } = new ConstantRetry<TKey>(500);
+    public IRetryStrategy RetryStrategy { get; private set; } = new ConstantRetry(500);
     /// <summary>
     /// How frequently the retry queue processor runs, in milliseconds.
     /// </summary>
@@ -24,7 +24,7 @@ public class SalusOptions<TKey>
     /// </summary>
     /// <param name="retryStrategy">The retry strategy when a message fails to send.</param>
     /// <returns>The <see cref="SalusOptions"/ instance.></returns>
-    public SalusOptions<TKey> SetRetryStrategy(IRetryStrategy<TKey> retryStrategy)
+    public SalusOptions<TKey> SetRetryStrategy(IRetryStrategy retryStrategy)
     {
         RetryStrategy = retryStrategy;
         return this;

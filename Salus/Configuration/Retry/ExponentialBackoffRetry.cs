@@ -6,7 +6,7 @@ namespace Salus.Configuration.Retry;
 /// A strategy for retrying the sending of a message, with an initial interval which
 /// gradually decreases.
 /// </summary>
-public class ExponentialBackoffRetry<TKey> : IRetryStrategy<TKey>
+public class ExponentialBackoffRetry : IRetryStrategy
 {
     /// <summary>
     /// The initial interval between retries.
@@ -35,7 +35,7 @@ public class ExponentialBackoffRetry<TKey> : IRetryStrategy<TKey>
     }
 
     /// <inheritdoc/>
-    public DateTime GetNextAttemptTime(SalusSaveEntity<TKey> save)
+    public DateTime GetNextAttemptTime(ISalusSaveEntity save)
     {
         var interval = InitialDelayMilliseconds * Math.Pow(Multiplier, save.FailedMessageSendAttempts);
 

@@ -9,36 +9,24 @@ namespace Salus.Models.Entities;
 /// A record of data that has been saved to a database, and the sending of the message
 /// to represent that save.
 /// </summary>
-public class SalusSaveEntity<TKey>
+public class SalusSaveEntity<TKey> : ISalusSaveEntity
 {
     /// <summary>
     /// A unique ID for this save.
     /// </summary>
     [Key]
     public TKey Id { get; private set; } = default!;
-    /// <summary>
-    /// The time at which the data was saved.
-    /// </summary>
+    /// <inheritdoc/>
     public DateTime UpdateDateTimeUtc { get; private set; } = DateTime.UtcNow;
-    /// <summary>
-    /// The time at which the message was successfully sent.
-    /// </summary>
+    /// <inheritdoc/>
     public DateTime? CompletedDateTimeUtc { get; internal set; }
-    /// <summary>
-    /// The number of times the message has failed to send.
-    /// </summary>
+    /// <inheritdoc/>
     public int FailedMessageSendAttempts { get; internal set; }
-    /// <summary>
-    /// The time of the last failed attempt to send the message.
-    /// </summary>
+    /// <inheritdoc/>
     public DateTime? LastFailedMessageSendAttemptUtc { get; internal set; }
-    /// <summary>
-    /// The next time to re-attempt sending the message.
-    /// </summary>
+    /// <inheritdoc/>
     public DateTime? NextMessageSendAttemptUtc { get; internal set; }
-    /// <summary>
-    /// JSON representing the saved data.
-    /// </summary>
+    /// <inheritdoc/>
     public string SaveJson { get; private set; } = string.Empty;
 
     // For Entity Framework
