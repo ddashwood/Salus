@@ -8,17 +8,17 @@ namespace Salus;
 /// overrides those features of DatabaseFacade which require special
 /// handling.
 /// </summary>
-internal class SalusDbContextTransaction : IDbContextTransaction
+internal class SalusDbContextTransaction<TKey> : IDbContextTransaction
 {
     private readonly IDbContextTransaction _wrappedTransaction;
-    private readonly ISalusCore _salus;
-    private readonly List<Save> _transactionSaves;
+    private readonly ISalusCore<TKey> _salus;
+    private readonly List<Save<TKey>> _transactionSaves;
 
-    public SalusDbContextTransaction(IDbContextTransaction wrappedTransaction, ISalusCore salus)
+    public SalusDbContextTransaction(IDbContextTransaction wrappedTransaction, ISalusCore<TKey> salus)
     {
         _wrappedTransaction = wrappedTransaction;
         _salus = salus;
-        _transactionSaves = new List<Save>();
+        _transactionSaves = new List<Save<TKey>>();
     }
 
     public Guid TransactionId => _wrappedTransaction.TransactionId;
@@ -60,7 +60,7 @@ internal class SalusDbContextTransaction : IDbContextTransaction
     }
 
 
-    public void AddTransactionSave(Save save)
+    public void AddTransactionSave(Save<TKey> save)
     {
         _transactionSaves.Add(save);
     }

@@ -5,7 +5,7 @@ namespace Salus.Configuration.Retry;
 /// <summary>
 /// A strategy for retrying the sending of a message at fixed intervals.
 /// </summary>
-public class ConstantRetry : IRetryStrategy
+public class ConstantRetry<TKey> : IRetryStrategy<TKey>
 {
     /// <summary>
     /// The interval between retries.
@@ -22,7 +22,7 @@ public class ConstantRetry : IRetryStrategy
     }
     
     /// <inheritdoc/>
-    public DateTime GetNextAttemptTime(SalusSaveEntity save)
+    public DateTime GetNextAttemptTime(SalusSaveEntity<TKey> save)
     {
         return DateTime.UtcNow.AddMilliseconds(RetryIntervalMilleseconds);
     }

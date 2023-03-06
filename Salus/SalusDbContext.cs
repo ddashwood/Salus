@@ -8,29 +8,29 @@ namespace Salus;
 /// <summary>
 /// A DbContext class that can be used as the base for creating Salus DbContexts.
 /// </summary>
-public class SalusDbContext : DbContext, ISalusDbContext
+public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
 {
-    private readonly ISalusCore _salus;
-    private SalusDatabaseFacade? _database;
+    private readonly ISalusCore<TKey> _salus;
+    private SalusDatabaseFacade<TKey>? _database;
 
 
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
-    protected SalusDbContext(ISalus salus)
+    protected SalusDbContext(ISalus<TKey> salus)
         : base()
     {
-        _salus = (ISalusCore)salus;
+        _salus = (ISalusCore<TKey>)salus;
         _salus.Init(this);
     }
 
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
-    protected SalusDbContext(ISalus salus, DbContextOptions options)
+    protected SalusDbContext(ISalus<TKey> salus, DbContextOptions options)
         : base(options)
     {
-        _salus = (ISalusCore)salus;
+        _salus = (ISalusCore<TKey>)salus;
         _salus.Init(this);
     }
 
-    public DbSet<SalusSaveEntity> SalusSaves => Set<SalusSaveEntity>();
+    public DbSet<SalusSaveEntity<TKey>> SalusSaves => Set<SalusSaveEntity<TKey>>();
 
     protected override sealed void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -58,22 +58,22 @@ public class SalusDbContext : DbContext, ISalusDbContext
         return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken, base.SaveChangesAsync).ConfigureAwait(false);
     }
 
-    internal void Apply(Save save)
+    internal void Apply(Save<TKey> save)
     {
         _salus.Apply(save);
     }
 
-    SalusDatabaseFacade ISalusDbContext.SalusDatabase
+    SalusDatabaseFacade<TKey> ISalusDbContext<TKey>.SalusDatabase
     {
         get
         {
             if (_database == null)
             {
-                _database = new SalusDatabaseFacade(base.Database, this, _salus);
+                _database = new SalusDatabaseFacade<TKey>(base.Database, this, _salus);
             }
             return _database;
         }
     }
 
-    public override DatabaseFacade Database => (DatabaseFacade)((this as ISalusDbContext).SalusDatabase);
+    public override DatabaseFacade Database => ((this as ISalusDbContext<TKey>).SalusDatabase);
 }

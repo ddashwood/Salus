@@ -4,14 +4,14 @@ using Salus.Models.Entities;
 
 namespace Salus.Messaging;
 
-internal class MessageSenderInternal : IMessageSenderInternal
+internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
 {
-    private readonly SalusOptions _options;
-    private readonly ILogger<MessageSenderInternal> _logger;
+    private readonly SalusOptions<TKey> _options;
+    private readonly ILogger<MessageSenderInternal<TKey>> _logger;
     private readonly IEnumerable<IMessageSender> _messageSenders;
     private readonly IEnumerable<IAsyncMessageSender> _asyncMessageSenders;
 
-    public MessageSenderInternal(SalusOptions options, ILogger<MessageSenderInternal> logger, IEnumerable<IMessageSender> messageSenders, IEnumerable<IAsyncMessageSender> asyncMessageSenders)
+    public MessageSenderInternal(SalusOptions<TKey> options, ILogger<MessageSenderInternal<TKey>> logger, IEnumerable<IMessageSender> messageSenders, IEnumerable<IAsyncMessageSender> asyncMessageSenders)
     {
         _options = options;
         _logger = logger;
@@ -19,7 +19,7 @@ internal class MessageSenderInternal : IMessageSenderInternal
         _asyncMessageSenders = asyncMessageSenders;
     }
 
-    public void Send(string message, SalusSaveEntity? entity, DbContext context)
+    public void Send(string message, SalusSaveEntity<TKey>? entity, DbContext context)
     {
         try
         {
@@ -65,7 +65,7 @@ internal class MessageSenderInternal : IMessageSenderInternal
         
     }
 
-    public async Task SendAsync(string message, SalusSaveEntity? entity, DbContext context)
+    public async Task SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context)
     {
         try
         {

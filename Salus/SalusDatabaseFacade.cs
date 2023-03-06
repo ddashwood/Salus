@@ -10,13 +10,13 @@ namespace Salus;
 /// overrides those features of DatabaseFacade which require special
 /// handling.
 /// </summary>
-internal class SalusDatabaseFacade : DatabaseFacade
+internal class SalusDatabaseFacade<TKey> : DatabaseFacade
 {
     private readonly DatabaseFacade _wrappedFacade;
-    private readonly ISalusCore _salus;
-    private SalusDbContextTransaction? _currentTransaction;
+    private readonly ISalusCore<TKey> _salus;
+    private SalusDbContextTransaction<TKey>? _currentTransaction;
 
-    public SalusDatabaseFacade(DatabaseFacade wrappedFacade, DbContext context, ISalusCore salus) : base(context)
+    public SalusDatabaseFacade(DatabaseFacade wrappedFacade, DbContext context, ISalusCore<TKey> salus) : base(context)
     {
         _wrappedFacade = wrappedFacade;
         _salus = salus;
@@ -29,13 +29,13 @@ internal class SalusDatabaseFacade : DatabaseFacade
     public override IDbContextTransaction BeginTransaction()
     {
         var tran = _wrappedFacade.BeginTransaction();
-        _currentTransaction = new SalusDbContextTransaction(tran, _salus);
+        _currentTransaction = new SalusDbContextTransaction<TKey>(tran, _salus);
         return _currentTransaction;
     }
     public override async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         var tran = await _wrappedFacade.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        _currentTransaction = new SalusDbContextTransaction(tran, _salus);
+        _currentTransaction = new SalusDbContextTransaction<TKey>(tran, _salus);
         return _currentTransaction;
     }
     public override bool CanConnect()
@@ -116,9 +116,9 @@ internal class SalusDatabaseFacade : DatabaseFacade
         return _wrappedFacade.ToString()!;
     }
 
-    public void AddTransactionSave(Save save)
+    public void AddTransactionSave(Save<TKey> save)
     {
-        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        if (CurrentTransaction is SalusDbContextTransaction<TKey> salusTransaction)
         {
             salusTransaction.AddTransactionSave(save);
         }
@@ -134,7 +134,7 @@ internal class SalusDatabaseFacade : DatabaseFacade
 
     private void OnCommitting()
     {
-        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        if (CurrentTransaction is SalusDbContextTransaction<TKey> salusTransaction)
         {
             salusTransaction.OnCommitting();
         }
@@ -142,14 +142,14 @@ internal class SalusDatabaseFacade : DatabaseFacade
 
     private async Task OnCommittingAsync()
     {
-        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        if (CurrentTransaction is SalusDbContextTransaction<TKey> salusTransaction)
         {
             await salusTransaction.OnCommittingAsync().ConfigureAwait(false);
         }
     }
     private void OnRollingBack()
     {
-        if (CurrentTransaction is SalusDbContextTransaction salusTransaction)
+        if (CurrentTransaction is SalusDbContextTransaction<TKey> salusTransaction)
         {
             salusTransaction.OnRollingBack();
         }

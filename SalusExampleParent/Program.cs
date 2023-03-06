@@ -10,11 +10,11 @@ using SalusExampleParent.Messaging;
 using IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
-        services.AddSalus<ExampleDbContext>(options =>
+        services.AddSalus<ExampleDbContext, int>(options =>
         {
             options
                 .SetRetryQueueProcessInterval(100)
-                .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
+                .SetRetryStrategy(new ExponentialBackoffRetry<int>(500, 1.1, 30000));
         });
         services.AddTransient<IMessageSender, ConsoleMessageSender>();
         services.AddTransient<IMessageSender, RabbitMqMessageSender>();

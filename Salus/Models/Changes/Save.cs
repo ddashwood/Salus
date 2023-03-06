@@ -4,10 +4,10 @@ using System.Reflection;
 
 namespace Salus.Models.Changes;
 
-internal class Save
+internal class Save<TKey>
 {
     [JsonIgnore]
-    public string Id { get; }
+    public TKey Id { get; internal set; } = default!;
     public string Version { get; }
 
     private List<ChangedRow> _changes;
@@ -15,7 +15,11 @@ internal class Save
 
     public Save(List<ChangedRow> changes)
     {
-        Id = SequentialGuidGenerator.Instance.NewGuid().ToString();
+        if (typeof(TKey) == typeof(string))
+        {
+            var id = SequentialGuidGenerator.Instance.NewGuid().ToString();
+            GetType().GetProperty(nameof(Id))!.SetValue(this, id);
+        }
         Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
         _changes = changes;
     }

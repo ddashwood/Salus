@@ -14,6 +14,9 @@ internal class ExampleParent
         _context.ExampleData.Add(new ExampleData { Data = "Example" });
         _context.SaveChanges();
 
+        var ents = _context.SalusSaves.ToList();
+
+
 
         const int DELAY = 10000;
 

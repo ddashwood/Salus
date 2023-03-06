@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Salus.Saving;
 
-internal class DbContextSaver : IDbContextSaver
+internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
 {
     // When applying changes from a collection of Change objects, we need to ensure that we
     // don't add those changes into the SalusDataChanges table in the database - the changes have
@@ -13,7 +13,7 @@ internal class DbContextSaver : IDbContextSaver
     // change of the data, not when it is updated elsewhere
     private bool _applying;
 
-    public Save? BuildPreliminarySave(DbContext context)
+    public Save<TKey>? BuildPreliminarySave(DbContext context)
     {
         if (_applying)
         {
@@ -62,10 +62,10 @@ internal class DbContextSaver : IDbContextSaver
             return null;
         }
 
-        return new Save(changes);
+        return new Save<TKey>(changes);
     }
 
-    public Task<Save?> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context)
+    public Task<Save<TKey>?> BuildPreliminarySaveAsync(CancellationToken cancellationToken, DbContext context)
     {
         return Task.FromResult(BuildPreliminarySave(context));
     }
@@ -165,7 +165,7 @@ internal class DbContextSaver : IDbContextSaver
                             .IsAssignableFrom(p.PropertyType));
         var dbSet = dbSetPropertyInfo.GetGetMethod()!.Invoke(context, null);
         
-        var method = typeof(DbContextSaver)
+        var method = typeof(DbContextSaver<TKey>)
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
             .Single(m => m.Name == nameof(GetEntityFromDatabaseWithPrimaryKey) && m.IsGenericMethod)
             .MakeGenericMethod(entityType);

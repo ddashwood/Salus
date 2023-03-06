@@ -4,10 +4,10 @@ using SalusTests.TestDataStructures.Entities;
 
 namespace SalusTests.TestDataStructures.Contexts;
 
-internal class DatabaseGeneratedKeyAnnotationContext : SalusDbContext
+internal class DatabaseGeneratedKeyAnnotationContext : SalusDbContext<int>
 {
     public DatabaseGeneratedKeyAnnotationContext(
-        ISalus salus,
+        ISalus<int> salus,
         DbContextOptions<DatabaseGeneratedKeyAnnotationContext> options
     )
         : base(salus, options)

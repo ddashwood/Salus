@@ -9,13 +9,13 @@ namespace Salus.Models.Entities;
 /// A record of data that has been saved to a database, and the sending of the message
 /// to represent that save.
 /// </summary>
-public class SalusSaveEntity
+public class SalusSaveEntity<TKey>
 {
     /// <summary>
     /// A unique ID for this save.
     /// </summary>
     [Key]
-    public string Id { get; private set; } = string.Empty;
+    public TKey Id { get; private set; } = default!;
     /// <summary>
     /// The time at which the data was saved.
     /// </summary>
@@ -47,7 +47,7 @@ public class SalusSaveEntity
     }
 
     // For testing
-    internal SalusSaveEntity(string id, DateTime updateDateTime, DateTime? completedDataTime,
+    internal SalusSaveEntity(TKey id, DateTime updateDateTime, DateTime? completedDataTime,
         int failedAttempts, DateTime? lastFailedSend, DateTime? nextSend, string message)
     {
         StackTrace stackTrace = new StackTrace();
@@ -66,7 +66,7 @@ public class SalusSaveEntity
         SaveJson = message;
     }
 
-    internal SalusSaveEntity(Save save)
+    internal SalusSaveEntity(Save<TKey> save)
     {
         Id = save.Id;
         UpdateDateTimeUtc = DateTime.UtcNow;

@@ -156,7 +156,7 @@ public class DbContextSaverTests
         context.CreateDatabaseTables();
 
         // Act
-        var save = JsonConvert.DeserializeObject<Save>(ADD_JSON)!;
+        var save = JsonConvert.DeserializeObject<Save<int>>(ADD_JSON)!;
         context.Apply(save);
 
         // Assert
@@ -200,7 +200,7 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"DELETE FROM SalusSaves");
 
         // Act
-        var save = JsonConvert.DeserializeObject<Save>(Helpers.FixVersion(UPDATE_JSON))!;
+        var save = JsonConvert.DeserializeObject<Save<int>>(Helpers.FixVersion(UPDATE_JSON))!;
         context.Apply(save);
 
         // Assert
@@ -244,7 +244,7 @@ public class DbContextSaverTests
         context.Database.ExecuteSql($"DELETE FROM SalusSaves");
 
         // Act
-        var save = JsonConvert.DeserializeObject<Save>(Helpers.FixVersion(DELETE_JSON))!;
+        var save = JsonConvert.DeserializeObject<Save<int>>(Helpers.FixVersion(DELETE_JSON))!;
         context.Apply(save);
 
         // Assert

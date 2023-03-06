@@ -4,10 +4,10 @@ using SalusTests.TestDataStructures.Entities;
 
 namespace SalusTests.TestDataStructures.Contexts;
 
-internal class NoKeyContext : SalusDbContext
+internal class NoKeyContext : SalusDbContext<int>
 {
     public NoKeyContext(
-        ISalus salus,
+        ISalus<int> salus,
         DbContextOptions<NoKeyContext> options
     )
         : base(salus, options)

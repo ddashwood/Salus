@@ -16,19 +16,19 @@ public class QueueProcessorTests
     {
         // Arrange
         var senderMock = new Mock<IMessageSender>();
-        var salus = Helpers.BuildTestSalus(out MessageSenderInternal messageSender, senderMock.Object);
+        var salus = Helpers.BuildTestSalus(out MessageSenderInternal<int> messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, contextOptions);
-        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext>>>().Object, messageSender);
+        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender);
 
         context.CreateDatabaseTables();
 
         var json = """{"Message":"Example}""";
-        context.SalusSaves.Add(new SalusSaveEntity("MyId", new DateTime(2020, 1, 1), null, 1,
+        context.SalusSaves.Add(new SalusSaveEntity<int>(123, new DateTime(2020, 1, 1), null, 1,
             new DateTime(2020, 1, 1, 0, 0, 1), DateTime.Now.AddSeconds(-1), json));
         context.SaveChanges();
 
@@ -44,19 +44,19 @@ public class QueueProcessorTests
     {
         // Arrange
         var senderMock = new Mock<IMessageSender>();
-        var salus = Helpers.BuildTestSalus(out MessageSenderInternal messageSender, senderMock.Object);
+        var salus = Helpers.BuildTestSalus(out MessageSenderInternal<int> messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, contextOptions);
-        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext>>>().Object, messageSender);
+        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender);
 
         context.CreateDatabaseTables();
 
         var json = """{"Message":"Example}""";
-        context.SalusSaves.Add(new SalusSaveEntity("MyId", new DateTime(2020, 1, 1), new DateTime(2020, 1, 1), 1,
+        context.SalusSaves.Add(new SalusSaveEntity<int>(123, new DateTime(2020, 1, 1), new DateTime(2020, 1, 1), 1,
             new DateTime(2020, 1, 1, 0, 0, 1), DateTime.Now.AddSeconds(-1), json));
         context.SaveChanges();
 
@@ -72,19 +72,19 @@ public class QueueProcessorTests
     {
         // Arrange
         var senderMock = new Mock<IMessageSender>();
-        var salus = Helpers.BuildTestSalus(out MessageSenderInternal messageSender, senderMock.Object);
+        var salus = Helpers.BuildTestSalus(out MessageSenderInternal<int> messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, contextOptions);
-        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext>>>().Object, messageSender);
+        var queueProcessor = new QueueProcessor<NonGeneratedKeyContext, int>(context, new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>().Object, messageSender);
 
         context.CreateDatabaseTables();
 
         var json = """{"Message":"Example}""";
-        context.SalusSaves.Add(new SalusSaveEntity("MyId", new DateTime(2020, 1, 1), null, 1,
+        context.SalusSaves.Add(new SalusSaveEntity<int>(123, new DateTime(2020, 1, 1), null, 1,
             new DateTime(2020, 1, 1, 0, 0, 1), DateTime.Now.AddSeconds(10), json));
         context.SaveChanges();
 

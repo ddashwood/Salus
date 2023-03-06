@@ -4,13 +4,13 @@ using Salus.Messaging;
 
 namespace Salus.HostedServices;
 
-internal class QueueProcessor<TContext> : IQueueProcessor<TContext> where TContext : SalusDbContext
+internal class QueueProcessor<TContext, TKey> : IQueueProcessor<TContext, TKey> where TContext : SalusDbContext<TKey>
 {
     private readonly TContext _context;
-    private readonly ILogger<QueueProcessor<TContext>> _logger;
-    private readonly IMessageSenderInternal _messageSender;
+    private readonly ILogger<QueueProcessor<TContext, TKey>> _logger;
+    private readonly IMessageSenderInternal<TKey> _messageSender;
 
-    public QueueProcessor(TContext context, ILogger<QueueProcessor<TContext>> logger, IMessageSenderInternal messageSender)
+    public QueueProcessor(TContext context, ILogger<QueueProcessor<TContext, TKey>> logger, IMessageSenderInternal<TKey> messageSender)
     {
         _context = context;
         _logger = logger;

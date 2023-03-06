@@ -4,10 +4,10 @@ using SalusTests.TestDataStructures.Entities;
 
 namespace SalusTests.TestDataStructures.Contexts;
 
-internal class NonGeneratedKeyContext : SalusDbContext
+internal class NonGeneratedKeyContext : SalusDbContext<int>
 {
     public NonGeneratedKeyContext(
-        ISalus salus,
+        ISalus<int> salus,
         DbContextOptions<NonGeneratedKeyContext> options
     )
         : base(salus, options)
@@ -23,7 +23,7 @@ internal class NonGeneratedKeyContext : SalusDbContext
         Database.OpenConnection();
         Database.ExecuteSql($"CREATE TABLE Ents (Id VARCHAR(1000) NOT NULL PRIMARY KEY, Name VARCHAR(1000))");
         Database.ExecuteSql($@"CREATE TABLE SalusSaves
-                                        (Id VARCHAR(1000) NOT NULL PRIMARY KEY,
+                                        (Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                         UpdateDateTimeUtc VARCHAR(1000) NOT NULL,
                                         CompletedDateTimeUtc VARCHAR(1000),
                                         FailedMessageSendAttempts INT NOT NULL,

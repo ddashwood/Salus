@@ -4,14 +4,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Salus.HostedServices;
 
-internal class QueueProcessorService<TContext> : IHostedService where TContext : SalusDbContext
+internal class QueueProcessorService<TContext, TKey> : IHostedService where TContext : SalusDbContext<TKey>
 {
-    private readonly ILogger<QueueProcessorService<TContext>> _logger;
+    private readonly ILogger<QueueProcessorService<TContext, TKey>> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly SalusOptions _options;
+    private readonly SalusOptions<TKey> _options;
     private Timer? _timer;
 
-    public QueueProcessorService(ILogger<QueueProcessorService<TContext>> logger, IServiceScopeFactory scopeFactory, SalusOptions options)
+    public QueueProcessorService(ILogger<QueueProcessorService<TContext, TKey>> logger, IServiceScopeFactory scopeFactory, SalusOptions<TKey> options)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
@@ -48,7 +48,7 @@ internal class QueueProcessorService<TContext> : IHostedService where TContext :
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var queueProcessor = scope.ServiceProvider.GetRequiredService<IQueueProcessor<TContext>>();
+                var queueProcessor = scope.ServiceProvider.GetRequiredService<IQueueProcessor<TContext, TKey>>();
                 await queueProcessor.ProcessQueue().ConfigureAwait(false);
             }
         }

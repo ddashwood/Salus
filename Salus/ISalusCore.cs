@@ -6,12 +6,12 @@ namespace Salus;
 /// <summary>
 /// Represents the core internal behaviour of Salus
 /// </summary>
-internal interface ISalusCore
+internal interface ISalusCore<TKey>
 {
     /// <summary>
     /// The <see cref="SalusOptions"/> for this instsance of Salus.
     /// </summary>
-    SalusOptions Options { get; }
+    SalusOptions<TKey> Options { get; }
 
 
     /// <summary>
@@ -19,7 +19,7 @@ internal interface ISalusCore
     /// </summary>
     /// <typeparam name="TContext">The context type.</typeparam>
     /// <param name="context">The context.</param>
-    void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext;
+    void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext<TKey>;
 
     /// <summary>
     /// Internal handling of SaveChanges() calls
@@ -51,7 +51,7 @@ internal interface ISalusCore
     /// Applies a <see cref="Save"/> to the database.
     /// </summary>
     /// <param name="save">The Save to apply.</param>
-    void Apply(Save save);
+    void Apply(Save<TKey> save);
 
     /// <summary>
     /// Configures the model.
@@ -63,12 +63,12 @@ internal interface ISalusCore
     /// Sends a message to consumers with details of a <see cref="Save"/>.
     /// </summary>
     /// <param name="save">The Save to communicate to consumers.</param>
-    void SendMessages(Save save);
+    void SendMessages(Save<TKey> save);
 
     /// <summary>
     /// Sends a message to consumers with details of a <see cref="Save"/>.
     /// </summary>
     /// <param name="save">The Save to communicate to consumers.</param>
     /// <returns>A Task which represents the asynchronous send operation.</returns>
-    Task SendMessageAsync(Save save);
+    Task SendMessageAsync(Save<TKey> save);
 }
