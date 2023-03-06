@@ -5,6 +5,19 @@ using Salus.Models.Entities;
 
 namespace Salus;
 
+public class SalusDbContext : SalusDbContext<int>
+{
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
+    protected SalusDbContext(ISalus<int> salus) : base(salus)
+    {
+    }
+
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
+    protected SalusDbContext(ISalus<int> salus, DbContextOptions options) : base(salus, options)
+    {
+    }
+}
+
 /// <summary>
 /// A DbContext class that can be used as the base for creating Salus DbContexts.
 /// </summary>

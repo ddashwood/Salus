@@ -4,7 +4,7 @@ using SalusTests.TestDataStructures.Entities;
 
 namespace SalusTests.TestDataStructures.Contexts;
 
-internal class NonGeneratedKeyContext : SalusDbContext<int>
+internal class NonGeneratedKeyContext : SalusDbContext
 {
     public NonGeneratedKeyContext(
         ISalus<int> salus,

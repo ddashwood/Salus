@@ -3,7 +3,7 @@ using Salus;
 
 namespace SalusExampleParent;
 
-internal class ExampleDbContext : SalusDbContext<int>
+internal class ExampleDbContext : SalusDbContext
 {
     public ExampleDbContext(ISalus<int> salus) : base(salus)
     {

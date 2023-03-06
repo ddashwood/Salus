@@ -4,7 +4,7 @@ using SalusTests.TestDataStructures.Entities;
 
 namespace SalusTests.TestDataStructures.Contexts;
 
-internal class DatabaseGeneratedKeyImplicitContext : SalusDbContext<int>
+internal class DatabaseGeneratedKeyImplicitContext : SalusDbContext
 {
     public DatabaseGeneratedKeyImplicitContext(
         ISalus<int> salus,
