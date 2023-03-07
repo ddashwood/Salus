@@ -40,20 +40,13 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
                 continue;
             }
 
-            ChangedRow? change = null;
-
             switch (entry.State)
             {
                 case EntityState.Deleted:
                 case EntityState.Modified:
                 case EntityState.Added:
-                    change = new ChangedRow(entry);
+                    changes.Add (new ChangedRow(entry));
                     break;
-            }
-
-            if (change != null)
-            {
-                changes.Add(change);
             }
         }
 
