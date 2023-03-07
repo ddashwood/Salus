@@ -9,7 +9,7 @@ namespace Salus;
 internal interface ISalusDbContext<TKey>
 {
     /// <summary>
-    /// A list of <see cref="SalusSaveEntity"/> objects that are yet to be commited to the database
+    /// Records pertaining to the data which has been saved in this DbContext
     /// </summary>
     DbSet<SalusSaveEntity<TKey>> SalusSaves { get; }
 
