@@ -274,20 +274,33 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         CheckInitialised();
         // Only send the message if there is nothing in the queue, and the queue is not being processed
         // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
-        //if (_semaphore.Start())
+        bool sendingNow = false;
+        if (_semaphore.Start())
         {
             try
             {
                 if (!_salusContext.SalusSaves.Any(c => c.CompletedDateTimeUtc == null
                                                 && DateTime.UtcNow >= c.NextMessageSendAttemptUtc))
                 {
+                    sendingNow = true;
                     var saveEntity = _salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
                     _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
                 }
             }
             finally
             {
-                //_semaphore.Stop();
+                _semaphore.Stop();
+            }
+        }
+
+        if (!sendingNow)
+        {
+            // If we can't send the message now, record in the database that it is ready to be sent straight away
+            var saveEntity = _salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
+            if (saveEntity != null)
+            {
+                saveEntity.NextMessageSendAttemptUtc = DateTime.UtcNow;
+                _dbContext.SaveChanges();
             }
         }
     }
@@ -298,6 +311,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         CheckInitialised();
         // Only send the message if there is nothing in the queue, and the queue is not being processed
         // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
+        bool sendingNow = false;
         if (_semaphore.Start())
         {
             try
@@ -305,6 +319,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                 if (!await _salusContext.SalusSaves.AnyAsync(c => c.CompletedDateTimeUtc == null
                                                 && DateTime.UtcNow >= c.NextMessageSendAttemptUtc).ConfigureAwait(false))
                 {
+                    sendingNow = true;
                     var saveEntity = await _salusContext.SalusSaves.SingleOrDefaultAsync(GetEqualsExpression(save.Id)).ConfigureAwait(false);
                     await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext).ConfigureAwait(false);
                 }
@@ -312,6 +327,17 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
             finally
             {
                 _semaphore.Stop();
+            }
+        }
+
+        if (!sendingNow)
+        {
+            // If we can't send the message now, record in the database that it is ready to be sent straight away
+            var saveEntity = await _salusContext.SalusSaves.SingleOrDefaultAsync(GetEqualsExpression(save.Id));
+            if (saveEntity != null)
+            {
+                saveEntity.NextMessageSendAttemptUtc = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
             }
         }
     }

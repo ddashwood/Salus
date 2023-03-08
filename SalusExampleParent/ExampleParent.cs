@@ -11,6 +11,7 @@ internal class ExampleParent
 
     public async Task Run()
     {
+        await Task.Delay(200);
         _context.ExampleData.Add(new ExampleData { Data = "Example" });
         _context.SaveChanges();
 
