@@ -11,6 +11,7 @@ using Salus.Saving;
 using Salus.Services;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Salus;
 
@@ -343,6 +344,8 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         // Only send the message if there is nothing in the queue, and the queue is not being processed
         // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
         bool sendingNow = false;
+        Task? task = null;
+
         if (_semaphore.Start())
         {
             try
@@ -351,8 +354,28 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                                                 && DateTime.UtcNow >= c.NextMessageSendAttemptUtc).ConfigureAwait(false))
                 {
                     sendingNow = true;
-                    var saveEntity = await _salusContext.SalusSaves.SingleOrDefaultAsync(GetEqualsExpression(save.Id)).ConfigureAwait(false);
-                    await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, _dbContext).ConfigureAwait(false);
+
+                    // Fire+forget the message sending. Because Entity Framework is not multi-threaded,
+                    // we need to create a new connection
+
+                    var context = _databaseProvider.GetDatabase(_dbContext.GetType(), out var scope);
+                    var salusContext = (ISalusDbContext<TKey>)context;
+
+                    task = Task.Run(async () =>
+                    {
+                        SalusSaveEntity<TKey>? saveEntity = null;
+                        try
+                        {
+                            saveEntity = await (salusContext?.SalusSaves?.SingleOrDefaultAsync(GetEqualsExpression(save.Id))
+                                        ?? Task.FromResult<SalusSaveEntity<TKey>?>(null))
+                                        .ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogError(ex, "Error getting the entity ready for sending the message");
+                        }
+                        await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, context);
+                    }).ContinueWith(_ => scope?.Dispose());
                 }
             }
             finally
