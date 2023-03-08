@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Salus.Idempotency;
@@ -23,6 +24,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     private readonly IMessageSenderInternal<TKey> _messageSender;
     private readonly ILogger<SalusCore<TKey>>? _logger;
     private readonly IQueueProcessorSemaphore _semaphore;
+    private readonly IServiceProvider _serviceProvider;
 
     private ISalusDbContext<TKey>? _salusContext;
     private DbContext? _dbContext;
@@ -45,7 +47,8 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         IMessageSenderInternal<TKey> messageSender,
         SalusOptions<TKey>? options,
         ILogger<SalusCore<TKey>>? logger,
-        IQueueProcessorSemaphore semaphore)
+        IQueueProcessorSemaphore semaphore,
+        IServiceProvider serviceProvider)
     {
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);
@@ -60,6 +63,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         Options = options ?? new SalusOptions<TKey>(null, null);
         _logger = logger;
         _semaphore = semaphore;
+        _serviceProvider = serviceProvider;
     }
 
     private void ValidateGenericType()
@@ -283,8 +287,19 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                                                 && DateTime.UtcNow >= c.NextMessageSendAttemptUtc))
                 {
                     sendingNow = true;
-                    var saveEntity = _salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
-                    _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, _dbContext);
+
+                    // Fire+forget the message sending. Because Entity Framework is not multi-threaded,
+                    // we need to create a new connection
+
+                    var scope = _serviceProvider.CreateScope();
+                    var context = scope.ServiceProvider.GetRequiredService(_dbContext.GetType());
+                    var salusContext = (ISalusDbContext<TKey>)context;
+
+                    _ = Task.Run(() =>
+                    {
+                        var saveEntity = salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
+                        _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, (DbContext)context);
+                    }).ContinueWith(_ => scope.Dispose());
                 }
             }
             finally

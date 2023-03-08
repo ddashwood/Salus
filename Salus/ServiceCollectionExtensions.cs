@@ -66,12 +66,12 @@ public static class ServiceCollectionExtensions
         if (contextOptionsAction == null)
         {
             services.AddDbContext<TContext>();
-            services.AddDbContextFactory<TContext>();
+            //services.AddDbContextFactory<TContext>();
         }
         else
         {
             services.AddDbContext<TContext>(contextOptionsAction);
-            services.AddDbContextFactory<TContext>(contextOptionsAction);
+            //services.AddDbContextFactory<TContext>(contextOptionsAction);
         }
 
         // Salus services are mostly transient - this ensures that each
