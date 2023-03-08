@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Salus;
 using Salus.Messaging;
+using Salus.Models.Entities;
+using Salus.QueueProcessing;
 using SalusTests.TestDataStructures.Contexts;
 using SalusTests.TestDataStructures.Entities;
 
@@ -23,7 +26,6 @@ public class MessagingTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
-
         context.CreateDatabaseTables();
 
         // Act
@@ -55,7 +57,6 @@ public class MessagingTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
-
         context.CreateDatabaseTables();
 
         // Act
@@ -87,7 +88,6 @@ public class MessagingTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
-
         context.CreateDatabaseTables();
         
         // Act
@@ -126,7 +126,6 @@ public class MessagingTests
             .Options;
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
-
         context.CreateDatabaseTables();
 
         // Act
@@ -144,5 +143,193 @@ public class MessagingTests
         Assert.Null(change.CompletedDateTimeUtc);
         Assert.Equal(1, change.FailedMessageSendAttempts);
         Assert.NotNull(change.LastFailedMessageSendAttemptUtc);
+    }
+
+    [Fact]
+    public async void MessageWithRetryErrorTest()
+    {
+        // Arrange
+
+        var mockSender = new Mock<IMessageSender>();
+        var senderException = new Exception();
+        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterRetries(3);
+
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
+
+        var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new NonGeneratedKeyContext(salus, dbOptions);
+        context.CreateDatabaseTables();
+
+        context.SalusSaves.Add(new SalusSaveEntity<int>(1, DateTime.UtcNow.AddSeconds(-2), null, 3, null, DateTime.UtcNow.AddSeconds(-1), """{"Test":"Value"}"""));
+        context.SaveChanges();
+
+        var queueLoggerMock = new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>();
+        var senderLoggerMock = new Mock<ILogger<MessageSenderInternal<int>>>();
+        var messageSender = new MessageSenderInternal<int>(salus.Options, senderLoggerMock.Object);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+
+        var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
+
+        // Act
+        await sender.ProcessQueue();
+
+        // Assert
+        senderLoggerMock.Verify(logger => logger.Log(
+                LogLevel.Error,
+                0,
+                It.Is<It.IsAnyType>((@object, @type) => @object.ToString() == MessageSenderInternal<int>.ERROR_SENDING && @type.Name == "FormattedLogValues"),
+                senderException,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async void MessageWithoutRetryErrorTest()
+    {
+        // Arrange
+
+        var mockSender = new Mock<IMessageSender>();
+        var senderException = new Exception();
+        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterRetries(3);
+
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
+
+        var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new NonGeneratedKeyContext(salus, dbOptions);
+        context.CreateDatabaseTables();
+
+        context.SalusSaves.Add(new SalusSaveEntity<int>(1, DateTime.UtcNow.AddSeconds(-2), null, 2, null, DateTime.UtcNow.AddSeconds(-1), """{"Test":"Value"}"""));
+        context.SaveChanges();
+
+        var queueLoggerMock = new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>();
+        var senderLoggerMock = new Mock<ILogger<MessageSenderInternal<int>>>();
+        var messageSender = new MessageSenderInternal<int>(salus.Options, senderLoggerMock.Object);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+
+        var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
+
+        // Act
+        await sender.ProcessQueue();
+
+        // Assert
+        senderLoggerMock.Verify(logger => logger.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((@object, @type) => true),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+
+        senderLoggerMock.Verify(logger => logger.Log(
+                LogLevel.Warning,
+                0,
+                It.Is<It.IsAnyType>((@object, @type) => @object.ToString() == MessageSenderInternal<int>.ERROR_SENDING && @type.Name == "FormattedLogValues"),
+                senderException,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async void MessageWithTimerErrorTest()
+    {
+        // Arrange
+
+        var mockSender = new Mock<IMessageSender>();
+        var senderException = new Exception();
+        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterTime(TimeSpan.FromMinutes(1));
+
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
+
+        var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new NonGeneratedKeyContext(salus, dbOptions);
+        context.CreateDatabaseTables();
+
+        context.SalusSaves.Add(new SalusSaveEntity<int>(1, DateTime.UtcNow.AddSeconds(-70), null, 3, null, DateTime.UtcNow.AddSeconds(-1), """{"Test":"Value"}"""));
+        context.SaveChanges();
+
+        var queueLoggerMock = new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>();
+        var senderLoggerMock = new Mock<ILogger<MessageSenderInternal<int>>>();
+        var messageSender = new MessageSenderInternal<int>(salus.Options, senderLoggerMock.Object);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+
+        var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
+
+        // Act
+        await sender.ProcessQueue();
+
+        // Assert
+        senderLoggerMock.Verify(logger => logger.Log(
+                LogLevel.Error,
+                0,
+                It.Is<It.IsAnyType>((@object, @type) => @object.ToString() == MessageSenderInternal<int>.ERROR_SENDING && @type.Name == "FormattedLogValues"),
+                senderException,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async void MessageWithoutTimerErrorTest()
+    {
+        // Arrange
+
+        var mockSender = new Mock<IMessageSender>();
+        var senderException = new Exception();
+        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterTime(TimeSpan.FromMinutes(1));
+
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
+
+        var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new NonGeneratedKeyContext(salus, dbOptions);
+        context.CreateDatabaseTables();
+
+        context.SalusSaves.Add(new SalusSaveEntity<int>(1, DateTime.UtcNow.AddSeconds(-40), null, 3, null, DateTime.UtcNow.AddSeconds(-1), """{"Test":"Value"}"""));
+        context.SaveChanges();
+
+        var queueLoggerMock = new Mock<ILogger<QueueProcessor<NonGeneratedKeyContext, int>>>();
+        var senderLoggerMock = new Mock<ILogger<MessageSenderInternal<int>>>();
+        var messageSender = new MessageSenderInternal<int>(salus.Options, senderLoggerMock.Object);
+        var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
+        semaphoreMock.Setup(m => m.Start()).Returns(true);
+
+        var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
+
+        // Act
+        await sender.ProcessQueue();
+
+        // Assert
+        senderLoggerMock.Verify(logger => logger.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((@object, @type) => true),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+
+        senderLoggerMock.Verify(logger => logger.Log(
+                LogLevel.Warning,
+                0,
+                It.Is<It.IsAnyType>((@object, @type) => @object.ToString() == MessageSenderInternal<int>.ERROR_SENDING && @type.Name == "FormattedLogValues"),
+                senderException,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }

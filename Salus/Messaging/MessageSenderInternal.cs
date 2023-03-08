@@ -1,11 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Salus.Models.Entities;
 
 namespace Salus.Messaging;
 
 internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
 {
+    public const string ERROR_SENDING = "Error sending message - message will be queued to be re-tried later";
+    public const string ERROR_SAVING_SUCCESS_DATA = "Error saving Salus changes";
+    public const string ERROR_SAVING_FAILURE_DATA = "Error recording message send failure";
+
     private readonly SalusOptions<TKey> _options;
     private readonly ILogger<MessageSenderInternal<TKey>> _logger;
 
@@ -19,8 +24,10 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
     {
         try
         {
+            // Send the message
             _options.MessageSender?.Send(message);
 
+            // Update the database to show the message is sent
             try
             {
                 if (entity != null)
@@ -31,13 +38,22 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             }
             catch (Exception saveException)
             {
-                _logger?.LogError(saveException, "Error saving Salus changes");
+                _logger?.LogError(saveException, ERROR_SAVING_SUCCESS_DATA);
             }
         }
         catch (Exception ex)
         {
-            _logger?.LogWarning(ex, "Error sending message - message will be queued to be re-tried later");
+            // Log the failure to send the message
+            if (LogError(entity))
+            {
+                _logger?.LogError(ex, ERROR_SENDING);
+            }
+            else
+            {
+                _logger?.LogWarning(ex, ERROR_SENDING);
+            }
 
+            // Update the database to show the message failed to send
             try
             {
                 if (entity != null)
@@ -50,7 +66,7 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             }
             catch (Exception saveException)
             {
-                _logger?.LogError(saveException, "Error recording message send failure");
+                _logger?.LogError(saveException, ERROR_SAVING_FAILURE_DATA);
             }
         }
 
@@ -62,6 +78,7 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
     {
         try
         {
+            // Send the message
             if (_options.AsyncMessageSender != null)
             {
                 await _options.AsyncMessageSender.SendAsync(message).ConfigureAwait(false);
@@ -71,6 +88,7 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
                 _options.MessageSender?.Send(message);
             }
 
+            // Update the database to show the message is sent
             try
             {
                 if (entity != null)
@@ -81,13 +99,22 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             }
             catch (Exception saveException)
             {
-                _logger?.LogError(saveException, "Error saving Salus changes");
+                _logger?.LogError(saveException, ERROR_SAVING_SUCCESS_DATA);
             }
         }
         catch (Exception ex)
         {
-            _logger?.LogWarning(ex, "Error sending message - message will be queued to be re-tried later");
+            // Log the failure to send the message
+            if (LogError(entity))
+            {
+                _logger?.LogError(ex, ERROR_SENDING);
+            }
+            else
+            {
+                _logger?.LogWarning(ex, ERROR_SENDING);
+            }
 
+            // Update the database to show the message failed to send
             try
             {
                 if (entity != null)
@@ -100,8 +127,28 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             }
             catch (Exception saveException)
             {
-                _logger?.LogError(saveException, "Error recording message send failure");
+                _logger?.LogError(saveException, ERROR_SAVING_FAILURE_DATA);
             }
         }
+    }
+
+    private bool LogError(SalusSaveEntity<TKey>? entity)
+    {
+        if (entity == null)
+        {
+            return false;
+        }
+
+        if (_options.ErrorAfterRetries != null && entity.FailedMessageSendAttempts >= _options.ErrorAfterRetries)
+        {
+            return true;
+        }
+
+        if (_options.ErrorAfterTime != null && DateTime.UtcNow - entity.UpdateDateTimeUtc >= _options.ErrorAfterTime)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -10,22 +10,29 @@ namespace SalusTests;
 
 internal static class Helpers
 {
-    public static SalusCore<int> BuildTestSalus(IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null)
+    public static SalusCore<int> BuildTestSalus(IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null, Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null)
     {
-        return BuildTestSalus(out MessageSenderInternal<int> _, messageSender, asyncMessageSender);
+        return BuildTestSalus(out MessageSenderInternal<int> _, messageSender, asyncMessageSender, optionsSetter);
     }
 
-    public static SalusCore<int> BuildTestSalus(out MessageSenderInternal<int> messageSenderInternal, IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null)
+    public static SalusCore<int> BuildTestSalus(out MessageSenderInternal<int> messageSenderInternal, IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null, Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null)
     {
+        var options = new SalusOptions<int>(messageSender, asyncMessageSender);
+        if (optionsSetter != null)
+        {
+            options = optionsSetter(options);
+        }
+
+
         var messageSenders = messageSender == null ? new List<IMessageSender>() : new List<IMessageSender> { messageSender};
         var asyncMessageSenders = asyncMessageSender == null ? new List<IAsyncMessageSender>() : new List<IAsyncMessageSender> { asyncMessageSender };
 
         var checker = new DbContextIdempotencyChecker();
         var saver = new DbContextSaver<int>();
-        messageSenderInternal = new MessageSenderInternal<int>(new SalusOptions<int>(messageSender, asyncMessageSender), new Mock<ILogger<MessageSenderInternal<int>>>().Object);
+        messageSenderInternal = new MessageSenderInternal<int>(options, new Mock<ILogger<MessageSenderInternal<int>>>().Object);
         var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
         semaphoreMock.Setup(m => m.Start()).Returns(true);
-        return new SalusCore<int>(checker, saver, messageSenderInternal, new SalusOptions<int>(messageSender, asyncMessageSender), new Mock<ILogger<SalusCore<int>>>().Object, semaphoreMock.Object);
+        return new SalusCore<int>(checker, saver, messageSenderInternal, options, new Mock<ILogger<SalusCore<int>>>().Object, semaphoreMock.Object);
     }
 
     public static string FixVersion(string json)
