@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Salus;
 using Salus.Configuration.Retry;
 using Salus.Messaging;
@@ -10,21 +11,20 @@ using SalusExampleParent.Messaging;
 using IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
-        services.AddSalus<ExampleDbContext>(new RabbitMqMessageSender(), options =>
-        //services.AddSalus<ExampleDbContext>(new ConsoleMessageSender(), options =>
-        //services.AddSalus<ExampleDbContext>(new ExceptionMessageSender(), options =>
+        services.AddSalus<ExampleDbContext>(new RabbitMqMessageSender(), salusOptions =>
+        //services.AddSalus<ExampleDbContext>(new ConsoleMessageSender(), salusOptions =>
+        //services.AddSalus<ExampleDbContext>(new ExceptionMessageSender(), salusOptions =>
         {
-            options
+            salusOptions
                 .SetRetryQueueProcessInterval(100)
                 .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
+        },
+        contextOptions =>
+        {
+            contextOptions.UseSqlite("Data Source=Application.db");
         });
 
-        services.AddScoped<ExampleParent>();
-        services.AddDbContext<ExampleDbContext>(options =>
-        {
-            options.UseSqlite("Data Source=Application.db");
-        });
-        
+        services.AddScoped<ExampleParent>();        
     })
     .Build();
 

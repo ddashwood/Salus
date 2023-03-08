@@ -5,10 +5,6 @@ namespace SalusExampleParent;
 
 internal class ExampleDbContext : SalusDbContext
 {
-    public ExampleDbContext(ISalus<int> salus) : base(salus)
-    {
-    }
-
     public ExampleDbContext(ISalus<int> salus, DbContextOptions<ExampleDbContext> options) : base(salus, options)
     {
     }
