@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Salus.Idempotency;
@@ -9,6 +8,7 @@ using Salus.Models.Changes;
 using Salus.Models.Entities;
 using Salus.QueueProcessing;
 using Salus.Saving;
+using Salus.Services;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
@@ -24,7 +24,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     private readonly IMessageSenderInternal<TKey> _messageSender;
     private readonly ILogger<SalusCore<TKey>>? _logger;
     private readonly IQueueProcessorSemaphore _semaphore;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ISalusDbContextProvider _databaseProvider;
 
     private ISalusDbContext<TKey>? _salusContext;
     private DbContext? _dbContext;
@@ -48,7 +48,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         SalusOptions<TKey>? options,
         ILogger<SalusCore<TKey>>? logger,
         IQueueProcessorSemaphore semaphore,
-        IServiceProvider serviceProvider)
+        ISalusDbContextProvider databaseProvider)
     {
         ArgumentNullException.ThrowIfNull(idempotencyChecker);
         ArgumentNullException.ThrowIfNull(saver);
@@ -63,7 +63,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         Options = options ?? new SalusOptions<TKey>(null, null);
         _logger = logger;
         _semaphore = semaphore;
-        _serviceProvider = serviceProvider;
+        _databaseProvider = databaseProvider;
     }
 
     private void ValidateGenericType()
@@ -279,6 +279,8 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         // Only send the message if there is nothing in the queue, and the queue is not being processed
         // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
         bool sendingNow = false;
+        Task? task = null;
+
         if (_semaphore.Start())
         {
             try
@@ -291,15 +293,22 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                     // Fire+forget the message sending. Because Entity Framework is not multi-threaded,
                     // we need to create a new connection
 
-                    var scope = _serviceProvider.CreateScope();
-                    var context = scope.ServiceProvider.GetRequiredService(_dbContext.GetType());
+                    var context = _databaseProvider.GetDatabase(_dbContext.GetType(), out var scope);
                     var salusContext = (ISalusDbContext<TKey>)context;
 
-                    _ = Task.Run(() =>
+                    task = Task.Run(() =>
                     {
-                        var saveEntity = salusContext.SalusSaves.SingleOrDefault(GetEqualsExpression(save.Id));
-                        _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, (DbContext)context);
-                    }).ContinueWith(_ => scope.Dispose());
+                        SalusSaveEntity<TKey>? saveEntity = null;
+                        try
+                        {
+                            saveEntity = salusContext?.SalusSaves?.SingleOrDefault(GetEqualsExpression(save.Id));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogError(ex, "Error getting the entity ready for sending the message");
+                        }
+                        _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, context);
+                    }).ContinueWith(_ => scope?.Dispose());
                 }
             }
             finally
@@ -317,6 +326,11 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                 saveEntity.NextMessageSendAttemptUtc = DateTime.UtcNow;
                 _dbContext.SaveChanges();
             }
+        }
+
+        if (Options.DoNotFireAndForget && task != null)
+        {
+            task.Wait();
         }
     }
 

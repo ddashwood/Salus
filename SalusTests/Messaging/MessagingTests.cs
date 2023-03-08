@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Salus;
 using Salus.Messaging;
 using Salus.Models.Entities;
 using Salus.QueueProcessing;
+using Salus.Services;
 using SalusTests.TestDataStructures.Contexts;
 using SalusTests.TestDataStructures.Entities;
 
@@ -19,7 +21,8 @@ public class MessagingTests
     {
         // Arrange
         var mockSender = new Mock<IMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockSender.Object);
+        var mockDatabaseProvider = new Mock<ISalusDbContextProvider>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: options => options.SetDoNotFireAndForget(), databaseProviderMock: mockDatabaseProvider);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -27,6 +30,9 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
         context.CreateDatabaseTables();
+
+        IServiceScope scope = null!;
+        mockDatabaseProvider.Setup(m => m.GetDatabase(context.GetType(), out scope)).Returns(context);
 
         // Act
         context.Ents.Add(new NoKeyAnnotationStringIdEntity
@@ -81,7 +87,8 @@ public class MessagingTests
     {
         // Arrange
         var mockSender = new Mock<IMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockSender.Object);
+        var mockDatabaseProvider = new Mock<ISalusDbContextProvider>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: options => options.SetDoNotFireAndForget(), databaseProviderMock: mockDatabaseProvider);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -89,7 +96,10 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
         context.CreateDatabaseTables();
-        
+
+        IServiceScope scope = null!;
+        mockDatabaseProvider.Setup(m => m.GetDatabase(context.GetType(), out scope)).Returns(context);
+
         // Act
         using (var tran = context.Database.BeginTransaction())
         {
@@ -119,7 +129,8 @@ public class MessagingTests
         // Arrange
         var mockSender = new Mock<IMessageSender>();
         mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(new Exception());
-        var salus = Helpers.BuildTestSalus(mockSender.Object);
+        var mockDatabaseProvider = new Mock<ISalusDbContextProvider>();
+        var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: options => options.SetDoNotFireAndForget(), databaseProviderMock: mockDatabaseProvider);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -127,6 +138,9 @@ public class MessagingTests
 
         var context = new NonGeneratedKeyContext(salus, dbOptions);
         context.CreateDatabaseTables();
+
+        IServiceScope scope = null!;
+        mockDatabaseProvider.Setup(m => m.GetDatabase(context.GetType(), out scope)).Returns(context);
 
         // Act
         context.Ents.Add(new NoKeyAnnotationStringIdEntity

@@ -5,17 +5,20 @@ using Salus;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Salus.QueueProcessing;
+using Salus.Services;
 
 namespace SalusTests;
 
 internal static class Helpers
 {
-    public static SalusCore<int> BuildTestSalus(IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null, Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null)
+    public static SalusCore<int> BuildTestSalus(IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null,
+        Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null, Mock<ISalusDbContextProvider>? databaseProviderMock = null)
     {
-        return BuildTestSalus(out MessageSenderInternal<int> _, messageSender, asyncMessageSender, optionsSetter);
+        return BuildTestSalus(out MessageSenderInternal<int> _, messageSender, asyncMessageSender, optionsSetter, databaseProviderMock);
     }
 
-    public static SalusCore<int> BuildTestSalus(out MessageSenderInternal<int> messageSenderInternal, IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null, Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null)
+    public static SalusCore<int> BuildTestSalus(out MessageSenderInternal<int> messageSenderInternal, IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null,
+        Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null, Mock<ISalusDbContextProvider>? databaseProviderMock = null)
     {
         var options = new SalusOptions<int>(messageSender, asyncMessageSender);
         if (optionsSetter != null)
@@ -32,7 +35,11 @@ internal static class Helpers
         messageSenderInternal = new MessageSenderInternal<int>(options, new Mock<ILogger<MessageSenderInternal<int>>>().Object);
         var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
         semaphoreMock.Setup(m => m.Start()).Returns(true);
-        return new SalusCore<int>(checker, saver, messageSenderInternal, options, new Mock<ILogger<SalusCore<int>>>().Object, semaphoreMock.Object);
+        databaseProviderMock ??= new Mock<ISalusDbContextProvider>();
+        var dbProvider = databaseProviderMock.Object;
+
+        return new SalusCore<int>(checker, saver, messageSenderInternal, options, new Mock<ILogger<SalusCore<int>>>().Object,
+            semaphoreMock.Object, dbProvider);
     }
 
     public static string FixVersion(string json)

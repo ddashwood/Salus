@@ -5,6 +5,7 @@ using Salus.Messaging;
 using Salus.Saving;
 using System.Net.NetworkInformation;
 using Microsoft.EntityFrameworkCore;
+using Salus.Services;
 
 namespace Salus;
 
@@ -81,6 +82,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IDbContextIdempotencyChecker, DbContextIdempotencyChecker>();
         services.AddTransient<IDbContextSaver<int>, DbContextSaver<int>>();
         services.AddTransient<IMessageSenderInternal<int>, MessageSenderInternal<int>>();
+
+        services.AddScoped<ISalusDbContextProvider, SalusDbContextProvider>();
 
         services.AddScoped<IQueueProcessor<TContext, int>, QueueProcessor<TContext, int>>();
         services.AddSingleton<IQueueProcessorSemaphore, QueueProcessorSemaphore>();

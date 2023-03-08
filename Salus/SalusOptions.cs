@@ -1,5 +1,6 @@
 ﻿using Salus.Configuration.Retry;
 using Salus.Messaging;
+using System.Diagnostics;
 
 namespace Salus;
 
@@ -35,6 +36,11 @@ public class SalusOptions<TKey>
     /// of how long it has been since the event was created.
     /// </summary>
     public TimeSpan? ErrorAfterTime { get; private set; }
+
+    // Only used for unit testing
+    internal bool DoNotFireAndForget { get; private set; }
+
+
 
 
     /// <summary>
@@ -86,6 +92,22 @@ public class SalusOptions<TKey>
         ErrorAfterTime = time;
         return this;
     }
+
+
+    internal SalusOptions<TKey> SetDoNotFireAndForget()
+    {
+        StackTrace stackTrace = new StackTrace();
+        var callerAssembly = stackTrace.GetFrame(1)!.GetMethod()!.DeclaringType!.Assembly;
+        if (callerAssembly.GetName().Name != "SalusTests")
+        {
+            throw new InvalidOperationException("Attempt to use the DoNotFireAndForget option from outside of unit tests");
+        }
+
+        DoNotFireAndForget = true;
+        return this;
+    }
+
+    
 
     internal SalusOptions(IMessageSender? messageSender, IAsyncMessageSender? asyncMessageSender)
     {
