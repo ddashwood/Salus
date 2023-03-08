@@ -2,9 +2,9 @@
 
 namespace SalusExampleParent.Messaging;
 
-internal class ExceptionMessageSender : IMessageSender
+internal class ExceptionMessageSender : IAsyncMessageSender
 {
-    public void Send(string message)
+    public Task SendAsync(string message)
     {
         throw new Exception("Simulated message sending exception");
     }

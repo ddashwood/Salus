@@ -20,7 +20,7 @@ public class MessagingTests
     public void MessageTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var mockDatabaseProvider = new Mock<ISalusDbContextProvider>();
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: options => options.SetDoNotFireAndForget(), databaseProviderMock: mockDatabaseProvider);
 
@@ -44,7 +44,7 @@ public class MessagingTests
         var result = context.SaveChanges();
 
         // Assert
-        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Once);
+        mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
         var change = context.SalusSaves.Single();
         Assert.NotNull(change.CompletedDateTimeUtc);
         Assert.Equal(0, change.FailedMessageSendAttempts);
@@ -55,7 +55,7 @@ public class MessagingTests
     public void MessageWithRollbackTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var dbOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
@@ -78,7 +78,7 @@ public class MessagingTests
         }
 
         // Assert
-        mockSender.Verify(m => m.Send(It.IsAny<string>()), Times.Never);
+        mockSender.Verify(m => m.SendAsync(It.IsAny<string>()), Times.Never);
         Assert.Equal(0, context.SalusSaves.Count());
     }
 
@@ -86,7 +86,7 @@ public class MessagingTests
     public void MessageWithCommitTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var mockDatabaseProvider = new Mock<ISalusDbContextProvider>();
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: options => options.SetDoNotFireAndForget(), databaseProviderMock: mockDatabaseProvider);
 
@@ -115,7 +115,7 @@ public class MessagingTests
         }
 
         // Assert
-        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Once);
+        mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
         Assert.NotNull(context.SalusSaves.Single().CompletedDateTimeUtc);
         var change = context.SalusSaves.Single();
         Assert.NotNull(change.CompletedDateTimeUtc);
@@ -127,8 +127,8 @@ public class MessagingTests
     public void MessageWithFailedMessageSendTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
-        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(new Exception());
+        var mockSender = new Mock<IAsyncMessageSender>();
+        mockSender.Setup(m => m.SendAsync(It.IsAny<string>())).Throws(new Exception());
         var mockDatabaseProvider = new Mock<ISalusDbContextProvider>();
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: options => options.SetDoNotFireAndForget(), databaseProviderMock: mockDatabaseProvider);
 
@@ -164,9 +164,9 @@ public class MessagingTests
     {
         // Arrange
 
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var senderException = new Exception();
-        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        mockSender.Setup(m => m.SendAsync(It.IsAny<string>())).Throws(senderException);
         Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterRetries(3);
 
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
@@ -207,9 +207,9 @@ public class MessagingTests
     {
         // Arrange
 
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var senderException = new Exception();
-        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        mockSender.Setup(m => m.SendAsync(It.IsAny<string>())).Throws(senderException);
         Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterRetries(3);
 
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
@@ -258,9 +258,9 @@ public class MessagingTests
     {
         // Arrange
 
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var senderException = new Exception();
-        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        mockSender.Setup(m => m.SendAsync(It.IsAny<string>())).Throws(senderException);
         Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterTime(TimeSpan.FromMinutes(1));
 
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);
@@ -301,9 +301,9 @@ public class MessagingTests
     {
         // Arrange
 
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var senderException = new Exception();
-        mockSender.Setup(m => m.Send(It.IsAny<string>())).Throws(senderException);
+        mockSender.Setup(m => m.SendAsync(It.IsAny<string>())).Throws(senderException);
         Func<SalusOptions<int>, SalusOptions<int>> salusOptions = o => o.SetErrorAfterTime(TimeSpan.FromMinutes(1));
 
         var salus = Helpers.BuildTestSalus(mockSender.Object, optionsSetter: salusOptions);

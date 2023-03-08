@@ -2,10 +2,11 @@
 
 namespace SalusExampleParent.Messaging;
 
-internal class ConsoleMessageSender : IMessageSender
+internal class ConsoleMessageSender : IAsyncMessageSender
 {
-    public void Send(string message)
+    public Task SendAsync(string message)
     {
         Console.WriteLine("Sending: " + message);
+        return Task.CompletedTask;
     }
 }

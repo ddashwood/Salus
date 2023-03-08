@@ -60,7 +60,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         _idempotencyChecker = idempotencyChecker;
         _saver = saver;
         _messageSender = messageSender;
-        Options = options ?? new SalusOptions<TKey>(null, null);
+        Options = options ?? new SalusOptions<TKey>(null);
         _logger = logger;
         _semaphore = semaphore;
         _databaseProvider = databaseProvider;
@@ -296,19 +296,21 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                     var context = _databaseProvider.GetDatabase(_dbContext.GetType(), out var scope);
                     var salusContext = (ISalusDbContext<TKey>)context;
 
-                    task = Task.Run(() =>
+                    task = Task.Run(async () =>
                     {
                         SalusSaveEntity<TKey>? saveEntity = null;
                         try
                         {
-                            saveEntity = salusContext?.SalusSaves?.SingleOrDefault(GetEqualsExpression(save.Id));
+                            saveEntity = await (salusContext?.SalusSaves?.SingleOrDefaultAsync(GetEqualsExpression(save.Id)) 
+                                        ?? Task.FromResult<SalusSaveEntity<TKey>?>(null))
+                                        .ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
                             _logger?.LogError(ex, "Error getting the entity ready for sending the message");
                         }
-                        _messageSender.Send(JsonConvert.SerializeObject(save), saveEntity, context);
-                    }).ContinueWith(_ => scope?.Dispose());
+                        await _messageSender.SendAsync(JsonConvert.SerializeObject(save), saveEntity, context);
+                    }).ContinueWith(_ =>  scope?.Dispose());
                 }
             }
             finally

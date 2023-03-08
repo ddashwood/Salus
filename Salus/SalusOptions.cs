@@ -9,7 +9,6 @@ namespace Salus;
 /// </summary>
 public class SalusOptions<TKey>
 {
-    internal IMessageSender? MessageSender { get; }
     internal IAsyncMessageSender? AsyncMessageSender { get; }
 
     /// <summary>
@@ -109,9 +108,8 @@ public class SalusOptions<TKey>
 
     
 
-    internal SalusOptions(IMessageSender? messageSender, IAsyncMessageSender? asyncMessageSender)
+    internal SalusOptions(IAsyncMessageSender? asyncMessageSender)
     {
-        MessageSender = messageSender;
         AsyncMessageSender = asyncMessageSender;
     }
 }

@@ -20,59 +20,6 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
         _logger = logger;
     }
 
-    public void Send(string message, SalusSaveEntity<TKey>? entity, DbContext context)
-    {
-        try
-        {
-            // Send the message
-            _options.MessageSender?.Send(message);
-
-            // Update the database to show the message is sent
-            try
-            {
-                if (entity != null)
-                {
-                    entity.CompletedDateTimeUtc = DateTime.UtcNow;
-                    context.SaveChanges();
-                }
-            }
-            catch (Exception saveException)
-            {
-                _logger?.LogError(saveException, ERROR_SAVING_SUCCESS_DATA);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log the failure to send the message
-            if (LogError(entity))
-            {
-                _logger?.LogError(ex, ERROR_SENDING);
-            }
-            else
-            {
-                _logger?.LogWarning(ex, ERROR_SENDING);
-            }
-
-            // Update the database to show the message failed to send
-            try
-            {
-                if (entity != null)
-                {
-                    entity.LastFailedMessageSendAttemptUtc = DateTime.UtcNow;
-                    entity.NextMessageSendAttemptUtc = _options.RetryStrategy.GetNextAttemptTime(entity);
-                    entity.FailedMessageSendAttempts++;
-                    context.SaveChanges();
-                }
-            }
-            catch (Exception saveException)
-            {
-                _logger?.LogError(saveException, ERROR_SAVING_FAILURE_DATA);
-            }
-        }
-
-
-        
-    }
 
     public async Task SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context)
     {
@@ -82,10 +29,6 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             if (_options.AsyncMessageSender != null)
             {
                 await _options.AsyncMessageSender.SendAsync(message).ConfigureAwait(false);
-            }
-            else
-            {
-                _options.MessageSender?.Send(message);
             }
 
             // Update the database to show the message is sent

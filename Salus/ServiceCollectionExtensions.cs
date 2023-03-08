@@ -3,7 +3,6 @@ using Salus.QueueProcessing;
 using Salus.Idempotency;
 using Salus.Messaging;
 using Salus.Saving;
-using System.Net.NetworkInformation;
 using Microsoft.EntityFrameworkCore;
 using Salus.Services;
 
@@ -21,7 +20,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSalus<TContext>(this IServiceCollection services,
         Action<SalusOptions<int>> salusOptionsAction, Action<DbContextOptionsBuilder>? contextOptionsAction = null) where TContext : SalusDbContext
     {
-        var optionsObject = GetOptions(null, null);
+        var optionsObject = GetOptions(null);
         salusOptionsAction(optionsObject);
 
         AddSalus<TContext>(services, optionsObject, contextOptionsAction);
@@ -29,26 +28,13 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddSalus<TContext>(this IServiceCollection services, IMessageSender messageSender,
+
+    public static IServiceCollection AddSalus<TContext>(this IServiceCollection services, IAsyncMessageSender asyncMessageSender,
         Action<SalusOptions<int>> salusOptionsAction, Action<DbContextOptionsBuilder>? contextOptionsAction = null) where TContext : SalusDbContext
     {
-        ArgumentNullException.ThrowIfNull(messageSender);
-
-        var optionsObject = GetOptions(messageSender, null);
-        salusOptionsAction(optionsObject);
-
-        AddSalus<TContext>(services, optionsObject, contextOptionsAction);
-
-        return services;
-    }
-
-    public static IServiceCollection AddSalus<TContext>(this IServiceCollection services, IMessageSender messageSender, IAsyncMessageSender asyncMessageSender,
-        Action<SalusOptions<int>> salusOptionsAction, Action<DbContextOptionsBuilder>? contextOptionsAction = null) where TContext : SalusDbContext
-    {
-        ArgumentNullException.ThrowIfNull(messageSender);
         ArgumentNullException.ThrowIfNull(asyncMessageSender);
 
-        var optionsObject = GetOptions(messageSender, asyncMessageSender);
+        var optionsObject = GetOptions(asyncMessageSender);
         salusOptionsAction(optionsObject);
 
         AddSalus<TContext>(services, optionsObject, contextOptionsAction);
@@ -57,9 +43,9 @@ public static class ServiceCollectionExtensions
     }
 
 
-    private static SalusOptions<int> GetOptions(IMessageSender? messageSender, IAsyncMessageSender? asyncMessageSender)
+    private static SalusOptions<int> GetOptions(IAsyncMessageSender? asyncMessageSender)
     {
-        return new SalusOptions<int>(messageSender, asyncMessageSender);
+        return new SalusOptions<int>(asyncMessageSender);
     }
 
     private static void AddSalus<TContext>(IServiceCollection services, SalusOptions<int> optionsObject, Action<DbContextOptionsBuilder>? contextOptionsAction) where TContext : SalusDbContext

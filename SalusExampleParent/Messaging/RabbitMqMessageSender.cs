@@ -4,9 +4,9 @@ using System.Text;
 
 namespace SalusExampleParent.Messaging;
 
-internal class RabbitMqMessageSender : IMessageSender
+internal class RabbitMqMessageSender : IAsyncMessageSender
 {
-    public void Send(string message)
+    public Task SendAsync(string message)
     {
         // Make a connection
         var factory = new ConnectionFactory()
@@ -26,5 +26,7 @@ internal class RabbitMqMessageSender : IMessageSender
         // Publish the message
         var bytes = Encoding.UTF8.GetBytes(message);
         channel.BasicPublish("salus-demo-data", "salus", null, bytes);
+
+        return Task.CompletedTask;
     }
 }

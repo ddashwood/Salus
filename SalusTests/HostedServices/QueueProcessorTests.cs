@@ -15,7 +15,7 @@ public class QueueProcessorTests
     public async Task ProcessQueuedItemTest()
     {
         // Arrange
-        var senderMock = new Mock<IMessageSender>();
+        var senderMock = new Mock<IAsyncMessageSender>();
         var salus = Helpers.BuildTestSalus(out MessageSenderInternal<int> messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
@@ -38,14 +38,14 @@ public class QueueProcessorTests
         await queueProcessor.ProcessQueue();
 
         // Assert
-        senderMock.Verify(m => m.Send(json), Times.Once);
+        senderMock.Verify(m => m.SendAsync(json), Times.Once);
     }
 
     [Fact]
     public async Task ProcessCompletedQueuedItemTest()
     {
         // Arrange
-        var senderMock = new Mock<IMessageSender>();
+        var senderMock = new Mock<IAsyncMessageSender>();
         var salus = Helpers.BuildTestSalus(out MessageSenderInternal<int> messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
@@ -68,14 +68,14 @@ public class QueueProcessorTests
         await queueProcessor.ProcessQueue();
 
         // Assert
-        senderMock.Verify(m => m.Send(It.IsAny<string>()), Times.Never);
+        senderMock.Verify(m => m.SendAsync(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
     public async Task ProcessFutureQueuedItemTest()
     {
         // Arrange
-        var senderMock = new Mock<IMessageSender>();
+        var senderMock = new Mock<IAsyncMessageSender>();
         var salus = Helpers.BuildTestSalus(out MessageSenderInternal<int> messageSender, senderMock.Object);
 
         var contextOptions = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
@@ -98,6 +98,6 @@ public class QueueProcessorTests
         await queueProcessor.ProcessQueue();
 
         // Assert
-        senderMock.Verify(m => m.Send(It.IsAny<string>()), Times.Never);
+        senderMock.Verify(m => m.SendAsync(It.IsAny<string>()), Times.Never);
     }
 }

@@ -15,7 +15,7 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
+        var mockSender = new Mock<IAsyncMessageSender>();
         var salus = Helpers.BuildTestSalus(mockSender.Object);
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
@@ -43,16 +43,15 @@ public class DbContextAsyncSaverTests
 
         Assert.Equal(1, context.SalusSaves.Count());
         Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
-        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Once);
+        mockSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
 
     [Fact]
     public async Task AddSaveChangesWithAsyncSenderAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
         var mockAsyncSender = new Mock<IAsyncMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockSender.Object, mockAsyncSender.Object);
+        var salus = Helpers.BuildTestSalus(mockAsyncSender.Object);
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -79,7 +78,6 @@ public class DbContextAsyncSaverTests
 
         Assert.Equal(1, context.SalusSaves.Count());
         Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
-        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Never);
         mockAsyncSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
 
@@ -87,9 +85,8 @@ public class DbContextAsyncSaverTests
     public async Task AddSaveChangesWithCommitAsyncTest()
     {
         // Arrange
-        var mockSender = new Mock<IMessageSender>();
         var mockAsyncSender = new Mock<IAsyncMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockSender.Object, mockAsyncSender.Object);
+        var salus = Helpers.BuildTestSalus(mockAsyncSender.Object);
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -122,7 +119,6 @@ public class DbContextAsyncSaverTests
 
         Assert.Equal(1, context.SalusSaves.Count());
         Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
-        mockSender.Verify(m => m.Send(Helpers.FixVersion(ADD_JSON)), Times.Never);
         mockAsyncSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
     }
 }

@@ -11,24 +11,20 @@ namespace SalusTests;
 
 internal static class Helpers
 {
-    public static SalusCore<int> BuildTestSalus(IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null,
+    public static SalusCore<int> BuildTestSalus(IAsyncMessageSender? asyncMessageSender = null,
         Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null, Mock<ISalusDbContextProvider>? databaseProviderMock = null)
     {
-        return BuildTestSalus(out MessageSenderInternal<int> _, messageSender, asyncMessageSender, optionsSetter, databaseProviderMock);
+        return BuildTestSalus(out MessageSenderInternal<int> _, asyncMessageSender, optionsSetter, databaseProviderMock);
     }
 
-    public static SalusCore<int> BuildTestSalus(out MessageSenderInternal<int> messageSenderInternal, IMessageSender? messageSender = null, IAsyncMessageSender? asyncMessageSender = null,
+    public static SalusCore<int> BuildTestSalus(out MessageSenderInternal<int> messageSenderInternal, IAsyncMessageSender? asyncMessageSender = null,
         Func<SalusOptions<int>, SalusOptions<int>>? optionsSetter = null, Mock<ISalusDbContextProvider>? databaseProviderMock = null)
     {
-        var options = new SalusOptions<int>(messageSender, asyncMessageSender);
+        var options = new SalusOptions<int>(asyncMessageSender);
         if (optionsSetter != null)
         {
             options = optionsSetter(options);
         }
-
-
-        var messageSenders = messageSender == null ? new List<IMessageSender>() : new List<IMessageSender> { messageSender};
-        var asyncMessageSenders = asyncMessageSender == null ? new List<IAsyncMessageSender>() : new List<IAsyncMessageSender> { asyncMessageSender };
 
         var checker = new DbContextIdempotencyChecker();
         var saver = new DbContextSaver<int>();
