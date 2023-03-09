@@ -21,14 +21,17 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
     }
 
 
-    public async Task SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context)
+    public async Task<bool> SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context)
     {
+        bool success = false;
+
         try
         {
             // Send the message
             if (_options.AsyncMessageSender != null)
             {
                 await _options.AsyncMessageSender.SendAsync(message).ConfigureAwait(false);
+                success = true;
             }
 
             // Update the database to show the message is sent
@@ -73,6 +76,8 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
                 _logger?.LogError(saveException, ERROR_SAVING_FAILURE_DATA);
             }
         }
+
+        return success;
     }
 
     private bool LogError(SalusSaveEntity<TKey>? entity)

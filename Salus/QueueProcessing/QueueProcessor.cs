@@ -37,13 +37,21 @@ internal class QueueProcessor<TContext, TKey> : IQueueProcessor<TContext, TKey> 
 
                 foreach (var dataChange in queue)
                 {
+                    var success = false;
                     try
                     {
-                        await _messageSender.SendAsync(dataChange.SaveJson, dataChange, _context).ConfigureAwait(false);
+                        success = await _messageSender.SendAsync(dataChange.SaveJson, dataChange, _context).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, "Error processing queue item");
+                    }
+
+                    if (!success)
+                    {
+                        // If this message failed to send, don't send the others - they probably won't send successfully anyway,
+                        // but if they did send they would be out of order
+                        break;
                     }
                 }
             }

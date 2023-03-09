@@ -5,5 +5,5 @@ namespace Salus.Messaging;
 
 internal interface IMessageSenderInternal<TKey>
 {
-    Task SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context);
+    Task<bool> SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context);
 }
