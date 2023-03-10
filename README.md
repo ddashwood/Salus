@@ -23,3 +23,5 @@ docker run -d --hostname salus-demo --name salus-demo-rabbit -p 15672:15672 -p 5
 
 - Multiple updates need to be applied in the correct order even if they come out of order
 - The class name that is sent in the message is specific to the sender
+- DbSet.RemoveRange() - if the range has not been realized yet, the entities are not tracked and we have
+no way (yet) to process them
