@@ -19,13 +19,13 @@ internal class QueueProcessor<TContext, TKey> : IQueueProcessor<TContext, TKey> 
         _semaphore = semaphore;
     }
 
-    public async Task ProcessQueue()
+    public async Task ProcessQueueAsync()
     {
         if (_semaphore.Start())
         {
             try
             {
-                _logger.LogInformation("Processing queue");
+                _logger.LogDebug("Processing queue");
 
                 var queue = await _context.SalusSaves
                     .Where(c => c.CompletedDateTimeUtc == null

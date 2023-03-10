@@ -190,7 +190,7 @@ public class MessagingTests
         var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
 
         // Act
-        await sender.ProcessQueue();
+        await sender.ProcessQueueAsync();
 
         // Assert
         senderLoggerMock.Verify(logger => logger.Log(
@@ -233,7 +233,7 @@ public class MessagingTests
         var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
 
         // Act
-        await sender.ProcessQueue();
+        await sender.ProcessQueueAsync();
 
         // Assert
         senderLoggerMock.Verify(logger => logger.Log(
@@ -284,7 +284,7 @@ public class MessagingTests
         var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
 
         // Act
-        await sender.ProcessQueue();
+        await sender.ProcessQueueAsync();
 
         // Assert
         senderLoggerMock.Verify(logger => logger.Log(
@@ -327,7 +327,7 @@ public class MessagingTests
         var sender = new QueueProcessor<NonGeneratedKeyContext, int>(context, queueLoggerMock.Object, messageSender, semaphoreMock.Object);
 
         // Act
-        await sender.ProcessQueue();
+        await sender.ProcessQueueAsync();
 
         // Assert
         senderLoggerMock.Verify(logger => logger.Log(

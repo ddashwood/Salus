@@ -5,6 +5,7 @@ using Salus.Messaging;
 using Salus.Saving;
 using Microsoft.EntityFrameworkCore;
 using Salus.Services;
+using Salus.Purging;
 
 namespace Salus;
 
@@ -53,15 +54,13 @@ public static class ServiceCollectionExtensions
         if (contextOptionsAction == null)
         {
             services.AddDbContext<TContext>();
-            //services.AddDbContextFactory<TContext>();
         }
         else
         {
             services.AddDbContext<TContext>(contextOptionsAction);
-            //services.AddDbContextFactory<TContext>(contextOptionsAction);
         }
 
-        // Salus services are mostly transient - this ensures that each
+        // Several Salus services are transient - this ensures that each
         // DbContext instance gets its own Salus instance
         services.AddSingleton(optionsObject);
         services.AddTransient<ISalus<int>, SalusCore<int>>();
@@ -71,9 +70,13 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ISalusDbContextProvider, SalusDbContextProvider>();
 
+        // Hosted services, and their semaphores
         services.AddScoped<IQueueProcessor<TContext, int>, QueueProcessor<TContext, int>>();
+        services.AddScoped<IPurger<TContext, int>, Purger<TContext, int>>();
         services.AddSingleton<IQueueProcessorSemaphore, QueueProcessorSemaphore>();
+        services.AddSingleton<IPurgerSemaphore, PurgerSemaphore>();
 
         services.AddHostedService<QueueProcessorService<TContext, int>>();
+        services.AddHostedService<PurgerService<TContext, int>>();
     }
 }

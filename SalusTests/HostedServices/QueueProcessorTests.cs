@@ -35,7 +35,7 @@ public class QueueProcessorTests
         context.SaveChanges();
 
         // Act
-        await queueProcessor.ProcessQueue();
+        await queueProcessor.ProcessQueueAsync();
 
         // Assert
         senderMock.Verify(m => m.SendAsync(json), Times.Once);
@@ -65,7 +65,7 @@ public class QueueProcessorTests
         context.SaveChanges();
 
         // Act
-        await queueProcessor.ProcessQueue();
+        await queueProcessor.ProcessQueueAsync();
 
         // Assert
         senderMock.Verify(m => m.SendAsync(It.IsAny<string>()), Times.Never);
@@ -95,7 +95,7 @@ public class QueueProcessorTests
         context.SaveChanges();
 
         // Act
-        await queueProcessor.ProcessQueue();
+        await queueProcessor.ProcessQueueAsync();
 
         // Assert
         senderMock.Verify(m => m.SendAsync(It.IsAny<string>()), Times.Never);

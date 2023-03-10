@@ -36,6 +36,18 @@ public class SalusOptions<TKey>
     /// </summary>
     public TimeSpan? ErrorAfterTime { get; private set; }
 
+    /// <summary>
+    /// When a message is successfully sent, after this many seconds the message may be purged
+    /// from the database. Null indicates that no purging takes place.
+    /// </summary>
+    public int? PurgeAfterSeconds { get; private set; }
+
+    /// <summary>
+    /// How frequently the purger runs, in milliseconds.
+    /// </summary>
+    public int RunPurgeIntervalMilliseconds { get; private set; } = 500;
+
+
     // Only used for unit testing
     internal bool DoNotFireAndForget { get; private set; }
 
@@ -47,7 +59,7 @@ public class SalusOptions<TKey>
     /// <see cref="ConstantRetry"/> and <see cref="ExponentialBackoffRetry"/>.
     /// </summary>
     /// <param name="retryStrategy">The retry strategy when a message fails to send.</param>
-    /// <returns>The <see cref="SalusOptions"/ instance.></returns>
+    /// <returns>The <see cref="SalusOptions{TKey}"/> instance.</returns>
     public SalusOptions<TKey> SetRetryStrategy(IRetryStrategy retryStrategy)
     {
         RetryStrategy = retryStrategy;
@@ -59,7 +71,7 @@ public class SalusOptions<TKey>
     /// Set how frequently the retry queue processor runs, in milliseconds.
     /// </summary>
     /// <param name="milliseconds">How frequently the retry queue processor should run, in milliseconds.</param>
-    /// <returns>The <see cref="SalusOptions"/ instance.></returns>
+    /// <returns>The <see cref="SalusOptions{TKey}"/> instance.</returns>
     public SalusOptions<TKey> SetRetryQueueProcessInterval(int milliseconds)
     {
         RetryQueueProcessIntervalMilliseconds = milliseconds;
@@ -72,7 +84,7 @@ public class SalusOptions<TKey>
     /// retries have been attempted.
     /// </summary>
     /// <param name="retries">The number of retries after which to generate an error.</param>
-    /// <returns>The <see cref="SalusOptions"/ instance.></returns>
+    /// <returns>The <see cref="SalusOptions{TKey}"/> instance.</returns>
     public SalusOptions<TKey> SetErrorAfterRetries(int retries)
     {
         ErrorAfterRetries = retries;
@@ -85,10 +97,33 @@ public class SalusOptions<TKey>
     /// passed since the event was created.
     /// </summary>
     /// <param name="time">The time after which to generate an error.</param>
-    /// <returns>The <see cref="SalusOptions"/ instance.></returns>
+    /// <returns>The <see cref="SalusOptions{TKey}"/> instance.</returns>
     public SalusOptions<TKey> SetErrorAfterTime(TimeSpan time)
     {
         ErrorAfterTime = time;
+        return this;
+    }
+
+    /// <summary>
+    /// Set the amount of time from a message being successfully sent after which that
+    /// message can be purged from the database.
+    /// </summary>
+    /// <param name="seconds">The number of seconds after which a sent message can be purged.</param>
+    /// <returns>The <see cref="SalusOptions{TKey}"/> instance.</returns>
+    public SalusOptions<TKey> SetPurgeSeconds(int seconds)
+    {
+        PurgeAfterSeconds = seconds;
+        return this;
+    }
+
+    /// <summary>
+    /// Set how frequently the purger runs, in milliseconds.
+    /// </summary>
+    /// <param name="milliseconds">The number of milliseconds.</param>
+    /// <returns>The <see cref="SalusOptions{TKey}"/> instance.</returns>
+    public SalusOptions<TKey> SetPurgeInterval(int milliseconds)
+    {
+        RunPurgeIntervalMilliseconds = milliseconds;
         return this;
     }
 

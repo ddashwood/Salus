@@ -23,7 +23,7 @@ internal class QueueProcessorService<TContext, TKey> : IHostedService where TCon
         try
         {
             _logger.LogInformation("Queue Processor starting");
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(_options.RetryQueueProcessIntervalMilliseconds));
+            _timer = new Timer(DoWorkAsync, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(_options.RetryQueueProcessIntervalMilliseconds));
         }
         catch (Exception ex)
         {
@@ -42,14 +42,14 @@ internal class QueueProcessorService<TContext, TKey> : IHostedService where TCon
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state)
+    private async void DoWorkAsync(object? state)
     {
         try
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var queueProcessor = scope.ServiceProvider.GetRequiredService<IQueueProcessor<TContext, TKey>>();
-                await queueProcessor.ProcessQueue().ConfigureAwait(false);
+                await queueProcessor.ProcessQueueAsync().ConfigureAwait(false);
             }
         }
         catch (Exception ex)

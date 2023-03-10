@@ -133,7 +133,8 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         _logger.LogDebug("Save changes");
         CheckInitialised();
 
-        var result = BuildPreliminarySave();
+        var save = BuildPreliminarySave();
+        int result;
 
         IDbContextTransaction? tran = null;
         try
@@ -146,11 +147,11 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                 tran = _dbContext.Database.BeginTransaction();
             }
 
-            baseSaveChanges(acceptAllChangesOnSuccess);
+            result = baseSaveChanges(acceptAllChangesOnSuccess);
 
-            if (result != null)
+            if (save != null)
             {
-                CompleteSave(result);
+                CompleteSave(save);
             }
 
             tran?.Commit();
@@ -166,20 +167,20 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         }
 
 
-        if (result == null)
+        if (save == null)
         {
-            return 0;
+            return result;
         }
 
         if (_dbContext.Database.CurrentTransaction == null)
         {
-            SendMessage(result);
+            SendMessage(save);
         }
         else
         {
-            _salusContext.SalusDatabase.AddTransactionSave(result);
+            _salusContext.SalusDatabase.AddTransactionSave(save);
         }
-        return result.Changes.Count;
+        return result;
     }
 
     /// <inheritdoc/>
@@ -188,7 +189,8 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         _logger.LogDebug("Save changes async");
         CheckInitialised();
 
-        var result = await BuildPreliminarySaveAsync(cancellationToken).ConfigureAwait(false);
+        var save = await BuildPreliminarySaveAsync(cancellationToken).ConfigureAwait(false);
+        int result;
 
         IDbContextTransaction? tran = null;
         try
@@ -201,11 +203,11 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                 tran = await _dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            await baseSaveChanges(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
+            result = await baseSaveChanges(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 
-            if (result != null)
+            if (save != null)
             {
-                await CompleteSaveAsync(result).ConfigureAwait(false);
+                await CompleteSaveAsync(save).ConfigureAwait(false);
             }
 
             await (tran?.CommitAsync() ?? Task.CompletedTask).ConfigureAwait(false);
@@ -221,20 +223,20 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         }
 
 
-        if (result == null)
+        if (save == null)
         {
-            return 0;
+            return result;
         }
 
         if (_dbContext.Database.CurrentTransaction == null)
         {
-            await SendMessageAsync(result).ConfigureAwait(false);
+            await SendMessageAsync(save).ConfigureAwait(false);
         }
         else
         {
-            _salusContext.SalusDatabase.AddTransactionSave(result);
+            _salusContext.SalusDatabase.AddTransactionSave(save);
         }
-        return result.Changes.Count;
+        return result;
     }
 
     private Save<TKey>? BuildPreliminarySave()

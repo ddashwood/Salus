@@ -17,7 +17,9 @@ using IHost host = Host.CreateDefaultBuilder()
         {
             salusOptions
                 .SetRetryQueueProcessInterval(100)
-                .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000));
+                .SetRetryStrategy(new ExponentialBackoffRetry(500, 1.1, 30000))
+                .SetPurgeInterval(100)
+                .SetPurgeSeconds(10);
         },
         contextOptions =>
         {
