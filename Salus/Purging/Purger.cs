@@ -35,7 +35,7 @@ internal class Purger<TContext, TKey> : IPurger<TContext, TKey> where TContext :
                 var cutoffTime = DateTime.UtcNow.AddSeconds(_options.PurgeAfterSeconds.Value * -1);
                 var entities = _context.SalusSaves.Where(s => s.CompletedDateTimeUtc < cutoffTime);
                 _context.SalusSaves.RemoveRange(entities);
-                var count = await _context.SaveChangesAsync();
+                var count = await _context.SaveChangesAsync().ConfigureAwait(false);
 
                 _logger.LogInformation($"Purged {count} records");
             }
