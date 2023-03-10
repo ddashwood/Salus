@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Salus.Models.Changes;
 using Salus.Models.Entities;
 
@@ -30,6 +32,7 @@ public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
 {
     private readonly ISalusCore<TKey> _salus;
     private SalusDatabaseFacade<TKey>? _database;
+    private ILoggerFactory? _loggerFactory;
 
 
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("EF Core isn't fully compatible with trimming, and running the application may generate unexpected runtime failures. Some specific coding pattern are usually required to make trimming work properly, see https://aka.ms/efcore-docs-trimming for more details.")]
@@ -46,6 +49,7 @@ public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
     {
         _salus = (ISalusCore<TKey>)salus;
         _salus.Init(this);
+        _loggerFactory = options.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider?.GetRequiredService<ILoggerFactory>();
     }
 
     public DbSet<SalusSaveEntity<TKey>> SalusSaves => Set<SalusSaveEntity<TKey>>();
@@ -87,7 +91,7 @@ public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
         {
             if (_database == null)
             {
-                _database = new SalusDatabaseFacade<TKey>(base.Database, this, _salus);
+                _database = new SalusDatabaseFacade<TKey>(base.Database, this, _salus, _loggerFactory);
             }
             return _database;
         }

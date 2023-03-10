@@ -23,6 +23,7 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
 
     public async Task<bool> SendAsync(string message, SalusSaveEntity<TKey>? entity, DbContext context)
     {
+        _logger.LogDebug("Sending message", message);
         bool success = false;
 
         try
@@ -45,19 +46,19 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             }
             catch (Exception saveException)
             {
-                _logger?.LogError(saveException, ERROR_SAVING_SUCCESS_DATA);
+                _logger.LogError(saveException, ERROR_SAVING_SUCCESS_DATA);
             }
         }
         catch (Exception ex)
         {
             // Log the failure to send the message
-            if (LogError(entity))
+            if (CreateErrorInsteadOfWarning(entity))
             {
-                _logger?.LogError(ex, ERROR_SENDING);
+                _logger.LogError(ex, ERROR_SENDING);
             }
             else
             {
-                _logger?.LogWarning(ex, ERROR_SENDING);
+                _logger.LogWarning(ex, ERROR_SENDING);
             }
 
             // Update the database to show the message failed to send
@@ -73,14 +74,22 @@ internal class MessageSenderInternal<TKey> : IMessageSenderInternal<TKey>
             }
             catch (Exception saveException)
             {
-                _logger?.LogError(saveException, ERROR_SAVING_FAILURE_DATA);
+                _logger.LogError(saveException, ERROR_SAVING_FAILURE_DATA);
             }
         }
 
+        if (success)
+        {
+            _logger.LogDebug("Send message ending successfully");
+        }
+        else
+        {
+            _logger.LogDebug("Send message ending unsuccessfully");
+        }
         return success;
     }
 
-    private bool LogError(SalusSaveEntity<TKey>? entity)
+    private bool CreateErrorInsteadOfWarning(SalusSaveEntity<TKey>? entity)
     {
         if (entity == null)
         {

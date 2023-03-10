@@ -16,7 +16,7 @@ public class DbContextAsyncSaverTests
     {
         // Arrange
         var mockSender = new Mock<IAsyncMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockSender.Object);
+        var salus = Helpers.BuildTestSalus(mockSender.Object, salusOptions => salusOptions.SetDoNotFireAndForget());
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
@@ -47,46 +47,11 @@ public class DbContextAsyncSaverTests
     }
 
     [Fact]
-    public async Task AddSaveChangesWithAsyncSenderAsyncTest()
-    {
-        // Arrange
-        var mockAsyncSender = new Mock<IAsyncMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockAsyncSender.Object);
-
-        var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
-            .UseSqlite("Filename=:memory:")
-            .Options;
-
-        var context = new NonGeneratedKeyContext(salus, options);
-
-        context.CreateDatabaseTables();
-
-        // Act
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
-        {
-            Id = "Test ID",
-            Name = "Test Name"
-        });
-
-        var result = await context.SaveChangesAsync().ConfigureAwait(false);
-
-        // Assert
-        Assert.Equal(1, result);
-        Assert.Equal(1, context.Ents.Count());
-        Assert.Equal("Test ID", context.Ents.Single().Id);
-        Assert.Equal("Test Name", context.Ents.Single().Name);
-
-        Assert.Equal(1, context.SalusSaves.Count());
-        Assert.Equal(Helpers.FixVersion(ADD_JSON), context.SalusSaves.Single().SaveJson);
-        mockAsyncSender.Verify(m => m.SendAsync(Helpers.FixVersion(ADD_JSON)), Times.Once);
-    }
-
-    [Fact]
     public async Task AddSaveChangesWithCommitAsyncTest()
     {
         // Arrange
         var mockAsyncSender = new Mock<IAsyncMessageSender>();
-        var salus = Helpers.BuildTestSalus(mockAsyncSender.Object);
+        var salus = Helpers.BuildTestSalus(mockAsyncSender.Object, salusOptions => salusOptions.SetDoNotFireAndForget());
 
         var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")

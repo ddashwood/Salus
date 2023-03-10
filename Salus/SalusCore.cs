@@ -23,7 +23,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     private readonly IDbContextIdempotencyChecker _idempotencyChecker;
     private readonly IDbContextSaver<TKey> _saver;
     private readonly IMessageSenderInternal<TKey> _messageSender;
-    private readonly ILogger<SalusCore<TKey>>? _logger;
+    private readonly ILogger<SalusCore<TKey>> _logger;
     private readonly IQueueProcessorSemaphore _semaphore;
     private readonly ISalusDbContextProvider _databaseProvider;
 
@@ -47,7 +47,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
         IDbContextSaver<TKey> saver,
         IMessageSenderInternal<TKey> messageSender,
         SalusOptions<TKey>? options,
-        ILogger<SalusCore<TKey>>? logger,
+        ILogger<SalusCore<TKey>> logger,
         IQueueProcessorSemaphore semaphore,
         ISalusDbContextProvider databaseProvider)
     {
@@ -86,9 +86,11 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public void Init<TContext>(TContext context) where TContext : DbContext, ISalusDbContext<TKey>
     {
+        _logger.LogDebug("Initialising a new Salus instance - checking for valid context");
         ArgumentNullException.ThrowIfNull(context);
         _salusContext = context;
         _dbContext = context;
+        _logger.LogDebug("Context appears valid");
     }
 
     [MemberNotNull(nameof(_salusContext), nameof(_dbContext))]
@@ -101,6 +103,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public void OnModelCreating(ModelBuilder modelBuilder)
     {
+        _logger.LogDebug("On model creating");
         modelBuilder.Entity<SalusSaveEntity<TKey>>(e =>
         {
             e.HasIndex(u => new { u.CompletedDateTimeUtc, u.NextMessageSendAttemptUtc });
@@ -119,6 +122,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public void Apply(Save<TKey> save)
     {
+        _logger.LogDebug("Applying", save.Id);
         CheckInitialised();
         _saver.Apply(_dbContext, save.Changes);
     }
@@ -126,6 +130,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public int SaveChanges(bool acceptAllChangesOnSuccess, Func<bool, int> baseSaveChanges)
     {
+        _logger.LogDebug("Save changes");
         CheckInitialised();
 
         var result = BuildPreliminarySave();
@@ -180,6 +185,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken, Func<bool, CancellationToken, Task<int>> baseSaveChanges)
     {
+        _logger.LogDebug("Save changes async");
         CheckInitialised();
 
         var result = await BuildPreliminarySaveAsync(cancellationToken).ConfigureAwait(false);
@@ -276,6 +282,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public void SendMessage(Save<TKey> save)
     {
+        _logger.LogDebug("Send message", save.Id);
         CheckInitialised();
         // Only send the message if there is nothing in the queue, and the queue is not being processed
         // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
@@ -340,6 +347,7 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
     /// <inheritdoc/>
     public async Task SendMessageAsync(Save<TKey> save)
     {
+        _logger.LogDebug("Send message async", save.Id);
         CheckInitialised();
         // Only send the message if there is nothing in the queue, and the queue is not being processed
         // Otherwise, if we send it now it may get sent out of order - we can just leave it in the queue for now
@@ -393,6 +401,11 @@ internal class SalusCore<TKey> : ISalus<TKey>, ISalusCore<TKey>
                 saveEntity.NextMessageSendAttemptUtc = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        if (Options.DoNotFireAndForget && task != null)
+        {
+            task.Wait();
         }
     }
 

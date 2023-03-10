@@ -60,5 +60,9 @@ internal class QueueProcessor<TContext, TKey> : IQueueProcessor<TContext, TKey> 
                 _semaphore.Stop();
             }
         }
+        else
+        {
+            _logger.LogDebug("Skipping queue processing because failed to obtain semaphore");
+        }
     }
 }
