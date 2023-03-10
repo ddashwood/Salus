@@ -9,6 +9,6 @@ internal class ExampleDbContext : SalusDbContext
     {
     }
 
-    [SalusDbSet]
+    [SalusSourceDbSet]
     public DbSet<ExampleData> ExampleData => Set<ExampleData>();
 }

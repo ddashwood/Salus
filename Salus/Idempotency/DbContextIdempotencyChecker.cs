@@ -26,7 +26,7 @@ internal class DbContextIdempotencyChecker : IDbContextIdempotencyChecker
         {
             if (typeof(DbSet<>).MakeGenericType(entityType.ClrType).IsAssignableFrom(dbContextProperty.PropertyType))
             {
-                if (dbContextProperty.GetCustomAttribute(typeof(SalusDbSetAttribute)) != null)
+                if (dbContextProperty.GetCustomAttribute(typeof(SalusSourceDbSetAttribute)) != null)
                 {
                     ValidateSalusEntity(entityType);
                 }

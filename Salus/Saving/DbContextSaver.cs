@@ -35,7 +35,7 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
             {
                 continue;
             }
-            if (dbSet.GetCustomAttribute(typeof(SalusDbSetAttribute)) == null)
+            if (dbSet.GetCustomAttribute(typeof(SalusSourceDbSetAttribute)) == null)
             {
                 continue;
             }

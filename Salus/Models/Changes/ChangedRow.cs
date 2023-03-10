@@ -23,6 +23,8 @@ internal class ChangedRow
     [JsonProperty]
     public string ChangeClrType { get; private set; } = string.Empty;
     [JsonProperty]
+    public string ChangeSalusType { get; private set; } = string.Empty;
+    [JsonProperty]
     public List<FieldWithValue>? UpdatedFields { get; private set; }
     [JsonProperty]
     public List<FieldWithValue>? PrimaryKeyFields { get; private set; }
@@ -42,6 +44,7 @@ internal class ChangedRow
             _ => throw new InvalidOperationException("Entry's State is not suitable for building a Change record")
         };
         ChangeClrType = entry.Metadata.ClrType.AssemblyQualifiedName ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
+        ChangeSalusType = entry.Metadata.ClrType.Name ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
     }
 
     public void CompleteAfterSave()

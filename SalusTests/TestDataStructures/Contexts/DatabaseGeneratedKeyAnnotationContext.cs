@@ -14,6 +14,6 @@ internal class DatabaseGeneratedKeyAnnotationContext : SalusDbContext
     {
     }
 
-    [SalusDbSet]
+    [SalusSourceDbSet]
     public DbSet<DatabaseGeneratedKeyAnnotationEntity> Ents => Set<DatabaseGeneratedKeyAnnotationEntity>();
 }

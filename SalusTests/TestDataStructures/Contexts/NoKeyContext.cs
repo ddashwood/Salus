@@ -15,7 +15,7 @@ internal class NoKeyContext : SalusDbContext
     }
 
 
-    [SalusDbSet]
+    [SalusSourceDbSet]
     public DbSet<NoKeyAnnotationIntIdEntity> Ents => Set<NoKeyAnnotationIntIdEntity>();
 
 

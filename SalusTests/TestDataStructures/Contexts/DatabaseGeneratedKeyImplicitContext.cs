@@ -15,7 +15,7 @@ internal class DatabaseGeneratedKeyImplicitContext : SalusDbContext
     }
 
 
-    [SalusDbSet]
+    [SalusSourceDbSet]
     public DbSet<NoKeyAnnotationIntIdEntity> Ents => Set<NoKeyAnnotationIntIdEntity>();
 
     public void CreateDatabaseTables()

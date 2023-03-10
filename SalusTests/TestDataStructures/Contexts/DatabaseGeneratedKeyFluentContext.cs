@@ -15,7 +15,7 @@ internal class DatabaseGeneratedKeyFluentContext : SalusDbContext
     }
 
 
-    [SalusDbSet]
+    [SalusSourceDbSet]
     public DbSet<NoKeyAnnotationIntIdEntity> Ents => Set<NoKeyAnnotationIntIdEntity>();
 
     protected override void OnSalusModelCreating(ModelBuilder modelBuilder)

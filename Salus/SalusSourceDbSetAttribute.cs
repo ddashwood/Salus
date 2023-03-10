@@ -5,6 +5,6 @@
 /// that it is to be observed by Salus.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public  class SalusDbSetAttribute : Attribute
+public  class SalusSourceDbSetAttribute : Attribute
 {
 }
