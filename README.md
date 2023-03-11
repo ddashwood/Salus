@@ -91,7 +91,7 @@ context.Apply(message);
 
 #### Matching tables in the parent and the child
 
-By default, Salus looks to find a DbSet\<T\> in the child where the name of class T matches the same type used in the DbSet\<T\> in the parent.
+By default, Salus looks to find a DbSet\<T\> in the child where the name of class T matches the name of the type used in the DbSet\<T\> in the parent.
 
 If you want to use classes of different names in the parent and the child, you have three options:
 
