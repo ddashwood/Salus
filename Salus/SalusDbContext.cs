@@ -91,7 +91,7 @@ public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
         Apply(save);
     }
 
-    internal void Apply(Save<TKey> save)
+    private void Apply(Save<TKey> save)
     {
         _salus.Apply(save);
     }
