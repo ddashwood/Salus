@@ -1,12 +1,12 @@
 # Salus
 ## Guarantee eventual consistency using Entity Framework in Microservices 
 
+Named after the Roman goddess of safety and well-being, Salus ensures the safety
+and well-being of your data in your Microservices-based system.
+
 ### *Status*
 
 This project is still being built. **Do not use** until it is completed!
-
-Named after the Roman goddess of safety and well-being, Salus ensures the safety
-and well-being of your data in your Microservices-based system.
 
 ### Demo setup
 
@@ -18,7 +18,7 @@ docker run -d --hostname salus-demo --name salus-demo-rabbit -p 15672:15672 -p 5
 ```
 
 Note: neither Docker nor RabbitMQ are required - you can make Salus work with any messaging system you like.
-However, the demo programs make use of RabbitMQ for message, and using Docker is an easy way of setting up the demo.
+However, the demo programs make use of RabbitMQ for messaging, and using Docker is an easy way of setting up the demo.
 
 3. Load the solution in Visual Studio. Run SalusExampleParent _and_ SalusExampleChild. (You can right-click on a project
 and select Debug/Start New Instance to run the second project.)
@@ -34,6 +34,9 @@ its database.
 in the parent. When you start RabbitMQ and the child application, once everything is up and running again the changes will
 be passed onto the child. Salus provides a very simple means of adding resiliancy - so that if your message system or
 one of your microservices is unavailable, your data still regains eventual consistency!
+
+And of course if you stop the parent from running, the child will continue to run, and can access its own copy of the 
+data independent of the parent.
 
 ### Instructions
 
