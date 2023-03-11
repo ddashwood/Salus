@@ -24,8 +24,10 @@ internal class RabbitMqMessageSender : IAsyncMessageSender
         channel.QueueBind("salus-demo-queue", "salus-demo-data", "salus", null);
 
         // Publish the message
+        var props = channel.CreateBasicProperties();
+        props.Persistent = true;
         var bytes = Encoding.UTF8.GetBytes(message);
-        channel.BasicPublish("salus-demo-data", "salus", null, bytes);
+        channel.BasicPublish("salus-demo-data", "salus", props, bytes);
 
         return Task.CompletedTask;
     }
