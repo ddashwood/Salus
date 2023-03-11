@@ -171,15 +171,13 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
                     return false;
                 }
 
-                var entityType = p.PropertyType.GenericTypeArguments[0];
-
                 var attribute = p.GetCustomAttribute<SalusDestinationDbSetAttribute>();
                 if (attribute == null)
                 {
                     return false;
                 }
 
-                var salusType = attribute.SalusName ?? entityType.Name;
+                var salusType = attribute.SalusName ?? p.PropertyType.GenericTypeArguments[0].Name;
 
                 return salusType == change.ChangeSalusType;
             });
