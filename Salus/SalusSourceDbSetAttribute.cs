@@ -7,4 +7,5 @@
 [AttributeUsage(AttributeTargets.Property)]
 public  class SalusSourceDbSetAttribute : Attribute
 {
+    public string? SalusName { get; set; }
 }

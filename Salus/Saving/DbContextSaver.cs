@@ -35,7 +35,9 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
             {
                 continue;
             }
-            if (dbSet.GetCustomAttribute(typeof(SalusSourceDbSetAttribute)) == null)
+
+            var attribute = dbSet.GetCustomAttribute<SalusSourceDbSetAttribute>();
+            if (attribute == null)
             {
                 continue;
             }
@@ -45,7 +47,7 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
                 case EntityState.Deleted:
                 case EntityState.Modified:
                 case EntityState.Added:
-                    changes.Add (new ChangedRow(entry));
+                    changes.Add (new ChangedRow(entry, attribute.SalusName));
                     break;
             }
         }

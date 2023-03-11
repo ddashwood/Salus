@@ -32,7 +32,7 @@ internal class ChangedRow
     public ChangedRow()
     { }
 
-    public ChangedRow(EntityEntry entry)
+    public ChangedRow(EntityEntry entry, string? salusName)
     {
         _entry = entry;
         _originalValues = entry.OriginalValues.Clone();
@@ -44,7 +44,7 @@ internal class ChangedRow
             _ => throw new InvalidOperationException("Entry's State is not suitable for building a Change record")
         };
         ChangeClrType = entry.Metadata.ClrType.AssemblyQualifiedName ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
-        ChangeSalusType = entry.Metadata.ClrType.Name ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
+        ChangeSalusType = salusName ?? entry.Metadata.ClrType.Name ?? throw new NullReferenceException("Attempt to track an entity with no Clr Type Name");
     }
 
     public void CompleteAfterSave()

@@ -14,6 +14,8 @@ public class DbContextSaverTests
     private const string DELETE_JSON = """{"Version":"TBC","Changes":[{"ChangeType":2,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","ChangeSalusType":"NoKeyAnnotationStringIdEntity","UpdatedFields":null,"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID 2"}]}]}""";
 
     private const string AUTO_GENERATE_JSON = """{"Version":"TBC","Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","ChangeSalusType":"NoKeyAnnotationIntIdEntity","UpdatedFields":[{"Name":"Id","Value":1},{"Name":"Name","Value":"Test Name 1"}],"PrimaryKeyFields":[{"Name":"Id","Value":1}]},{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationIntIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","ChangeSalusType":"NoKeyAnnotationIntIdEntity","UpdatedFields":[{"Name":"Id","Value":2},{"Name":"Name","Value":"Test Name 2"}],"PrimaryKeyFields":[{"Name":"Id","Value":2}]}]}""";
+    private const string ADD_JSON_CUSTOM_NAME = """{"Version":"TBC","Changes":[{"ChangeType":0,"ChangeClrType":"SalusTests.TestDataStructures.Entities.NoKeyAnnotationStringIdEntity, SalusTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null","ChangeSalusType":"CustomName","UpdatedFields":[{"Name":"Id","Value":"Test ID"},{"Name":"Name","Value":"Test Name"}],"PrimaryKeyFields":[{"Name":"Id","Value":"Test ID"}]}]}""";
+
 
     [Fact]
     public void AddSaveChangesTest()
@@ -288,5 +290,38 @@ public class DbContextSaverTests
         Debug.WriteLine(AUTO_GENERATE_JSON);
         Debug.WriteLine(context.SalusSaves.Single().SaveJson);
         Assert.Equal(Helpers.FixVersion(AUTO_GENERATE_JSON), context.SalusSaves.Single().SaveJson);
+    }
+
+    [Fact]
+    public void AddSaveChangesWithCustomNameTest()
+    {
+        // Arrange
+        var salus = Helpers.BuildTestSalus();
+
+        var options = new DbContextOptionsBuilder<NonGeneratedKeyContextWithNamedSet>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new NonGeneratedKeyContextWithNamedSet(salus, options);
+
+        context.CreateDatabaseTables();
+
+        // Act
+        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        {
+            Id = "Test ID",
+            Name = "Test Name"
+        });
+
+        var result = context.SaveChanges();
+
+        // Assert
+        Assert.Equal(1, result);
+        Assert.Equal(1, context.Ents.Count());
+        Assert.Equal("Test ID", context.Ents.Single().Id);
+        Assert.Equal("Test Name", context.Ents.Single().Name);
+
+        Assert.Equal(1, context.SalusSaves.Count());
+        Assert.Equal(Helpers.FixVersion(ADD_JSON_CUSTOM_NAME), context.SalusSaves.Single().SaveJson);
     }
 }
