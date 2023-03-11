@@ -86,6 +86,18 @@ contextOptions =>
 context.Apply(message);
 ```
 
+#### Matching tables in the parent and the child
+
+By default, Salus looks to find a DbSet\<T\> in the child where T matches the same type used in the DbSet\<T\> in the parent.
+
+If you want to use classes of different names in the parent and the child, you have three options:
+
+1. In the parent, use `[SalusSourceDbSet(SalusName = "DestinationClassName")]`. This is probably not recommended as it creates
+a tight coupling between the parent and the child
+
+2. In the child, use `[SalusDestinationDbSet(SalusName = "SourceClassName")]`
+3. In both the parent and the child, you can set the `SalusName` as shown in 1 and 2, but make sure they match in both the parent
+and the child.
 
 ### Known Issues
 
