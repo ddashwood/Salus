@@ -21,7 +21,9 @@ docker run -d --hostname salus-demo --name salus-demo-rabbit -p 15672:15672 -p 5
 
 ### Known Issues
 
-- Multiple updates need to be applied in the correct order even if they come out of order
+- Multiple updates need to be applied in the correct order even if they come out of order (e.g. from a distrubted
+setup, or if the messaging service sends messagesd out of order)
 - The class name that is sent in the message is specific to the sender
-- DbSet.RemoveRange() - if the range has not been realized yet, the entities are not tracked and we have
-no way (yet) to process them
+- DbSet.RemoveRange() - if the range has not been realized yet, the entities may not be tracked - needs testing to
+see if this works
+- Multiple related tables being updated at the same time may not work if the updates happen out of order - needs testing
