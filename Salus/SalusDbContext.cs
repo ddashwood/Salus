@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Salus.Models.Changes;
 using Salus.Models.Entities;
 
@@ -78,6 +79,16 @@ public class SalusDbContext<TKey> : DbContext, ISalusDbContext<TKey>
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         return await _salus.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken, base.SaveChangesAsync).ConfigureAwait(false);
+    }
+
+    public void Apply(string message)
+    {
+        var save = JsonConvert.DeserializeObject<Save<TKey>>(message);
+        if (save == null)
+        {
+            throw new InvalidOperationException("Message is not in the correct format");
+        }
+        Apply(save);
     }
 
     internal void Apply(Save<TKey> save)

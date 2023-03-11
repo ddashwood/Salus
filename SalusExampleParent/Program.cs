@@ -28,7 +28,7 @@ internal static class Program
                 },
                 contextOptions =>
                 {
-                    contextOptions.UseSqlite("Data Source=Application.db");
+                    contextOptions.UseSqlite("Data Source=Parent.db");
                 });
 
                 services.AddScoped<MainForm>();

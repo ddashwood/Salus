@@ -112,6 +112,10 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
         {
             return; // This entity already exists in the database
         }
+        if (entityType == null)
+        {
+            return;
+        }
 
         // Create and populate the entity
         var entity = Activator.CreateInstance(entityType);
@@ -131,6 +135,10 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
     private void ApplyUpdate(DbContext context, ChangedRow change)
     {
         var entity = GetEntityFromDatabaseWithPrimaryKey(context, change, out var entityType);
+        if (entityType == null)
+        {
+            return;
+        }
         ApplyFieldChanges(change, entityType, entity);
     }
 
@@ -147,19 +155,18 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
             .GetType()
             .GetProperties()
             .Single(p => typeof(DbSet<>)
-                            .MakeGenericType(entityType)
+                            .MakeGenericType(entityType!)
                             .IsAssignableFrom(p.PropertyType));
         var dbSet = dbSetPropertyInfo.GetGetMethod()!.Invoke(context, null);
         dbSetPropertyInfo.PropertyType.GetMethod("Remove")!.Invoke(dbSet, new object?[] { entity });
     }
 
-    private object? GetEntityFromDatabaseWithPrimaryKey(DbContext context, ChangedRow change, out Type entityType)
+    private object? GetEntityFromDatabaseWithPrimaryKey(DbContext context, ChangedRow change, out Type? entityType)
     {
         // N.b. need to create a local copy of this, because we are not allowed to use "out" parameters in
         // lambdas such as when we get the dbSetPropertyInfo below
 
-        var localEntityType = entityType = Type.GetType(change.ChangeClrType)
-            ?? throw new InvalidOperationException("Can't find type when applying change (insert): " + change.ChangeClrType);
+        entityType = null;
 
         var dbSetPropertyInfo = context
             .GetType()
@@ -188,6 +195,7 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
             return null;
         }
 
+        entityType = dbSetPropertyInfo.PropertyType.GenericTypeArguments[0];
         var dbSet = dbSetPropertyInfo.GetGetMethod()!.Invoke(context, null);
         
         var method = typeof(DbContextSaver<TKey>)
@@ -204,10 +212,13 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
 
         foreach (var primaryKeyField in change.PrimaryKeyFields!)
         {
-            var parameterExpression = Expression.Parameter(typeof(TEntity));
+            var destinationType = typeof(TEntity).GetProperty(primaryKeyField.Name)!.PropertyType;
+            var value = Convert.ChangeType(primaryKeyField.Value, destinationType);
 
+            var parameterExpression = Expression.Parameter(typeof(TEntity));
+            
             Expression left = Expression.Property(parameterExpression, primaryKeyField.Name);
-            Expression right = Expression.Constant(primaryKeyField.Value);
+            Expression right = Expression.Constant(value);
             Expression equals = Expression.Equal(left, right);
             var lambda = (Expression<Func<TEntity, bool>>) Expression.Lambda(equals, parameterExpression);
 
@@ -227,10 +238,20 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
 
         foreach (var fieldData in change.UpdatedFields!)
         {
+            var prop = entityType.GetProperty(fieldData.Name);
+            if (prop == null)
+            {
+                return; // Property does not exist on the destination type
+            }
+
             // For now, assume that we're only working with properties
             // TO DO - be able to handle properties that are backed by fields
-            var setter = entityType.GetProperty(fieldData.Name)!.GetSetMethod()!;
-            setter.Invoke(entity, new object?[] { fieldData.Value });
+
+            var destinationType = prop.PropertyType;
+            var value = Convert.ChangeType(fieldData.Value, destinationType);
+
+            var setter = prop.GetSetMethod()!;
+            setter.Invoke(entity, new object?[] { value });
         }
     }
 }
