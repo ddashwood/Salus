@@ -10,20 +10,90 @@ and well-being of your data in your Microservices-based system.
 
 ### Demo setup
 
-Run the following command:
+1. Install Docker and ensure it is running
+2. Run the following command to start RabbitMQ:
 
 ```
 docker run -d --hostname salus-demo --name salus-demo-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 ```
 
+Note: neither Docker nor RabbitMQ are required - you can make Salus work with any messaging system you like.
+However, the demo programs make use of RabbitMQ for message, and using Docker is an easy way of setting up the demo.
 
-*Full instructions coming soon*
+3. Load the solution in Visual Studio. Run SalusExampleParent _and_ SalusExampleChild. (You can right-click on a project
+and select Debug/Start New Instance to run the second project.)
+
+In the parent application, you will see a form which allows you to add, edit or delete rows of very basic data.
+
+Whatever changes you make in the parent application will be mirrored almost immediately in the child application. The
+two applications are using entirely different instances of SqLite to store their data - the databases are not connected
+at all. But every change that is made in the parent's database is notified to the child, and the child is able to update
+its database.
+
+**Here comes the clever bit.** Stop either RabbitMQ, or the child application, or both. Then continue to make changes
+in the parent. When you start RabbitMQ and the child application, once everything is up and running again the changes will
+be passed onto the child. Salus provides a very simple means of adding resiliancy - so that if your message system or
+one of your microservices is unavailable, your data still regains eventual consistency!
+
+### Instructions
+
+#### In the parent
+
+1. Create a DbContext in the same way as usual, except:
+
+- Inherit from SalusDbContext instead of DbContext
+- Apply the `[SalusSourceDbSet]` attribute to any DbSet that you want Salus to monitor
+2. Create a Message Sender, by creating a class which implements IAsyncMessageSender. In here, you need to add a single
+method which sends messages. You can use whatever messaging technology you like in here (the example uses RabbitMQ).
+You can add whatever routing or other instructions you need.
+3. Register with dependency injection using the following code:
+
+```
+services.AddSalus<MyContext>(new MessageSender(), salusOptions => 
+{
+    // There are a variety of options you can put here - see demo for examples
+},
+contextOptions =>
+{
+    // Put your DbContext options here, the same way you normally would
+});
+```
+
+4. Use like any other DbContext!
+
+#### In the child
+
+1. Create a DbContext in the same way as usual, except:
+
+- Inherit from SalusDbContext instead of DbContext
+- Apply the `[SalusDestinationDbSet]` attribute to any DbSet that you want Salus to write to
+2. Register with dependency injection using the following code:
+
+```
+services.AddSalus<MyContext>(salusOptions => 
+{
+    // Probably not needed if you are only receiving Salus data, not sending
+},
+contextOptions =>
+{
+    // Put your DbContext options here, the same way you normally would
+});
+```
+
+3. Add whatever code you need to receive messages from your messaging system. When you receive a message, call:
+
+```
+context.Apply(message);
+```
+
 
 ### Known Issues
 
+This project is a work in progress. There are multiple things which are not tested, and may or may not work. This
+list includes (but is not limited to):
+
 - Multiple updates need to be applied in the correct order even if they come out of order (e.g. from a distrubted
 setup, or if the messaging service sends messagesd out of order)
-- The class name that is sent in the message is specific to the sender
 - DbSet.RemoveRange() - if the range has not been realized yet, the entities may not be tracked - needs testing to
 see if this works
 - Multiple related tables being updated at the same time may not work if the updates happen out of order - needs testing
