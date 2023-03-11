@@ -112,3 +112,9 @@ setup, or if the messaging service sends messagesd out of order)
 - DbSet.RemoveRange() - if the range has not been realized yet, the entities may not be tracked - needs testing to
 see if this works
 - Multiple related tables being updated at the same time may not work if the updates happen out of order - needs testing
+
+### Testing
+
+There is a test project attached to the solution. The tests are generally of the form of integration tests, rather than unit tests,
+because testing the code in Salus is pointless unless the way it integrates with Entity Framework is as expected. Tests use 
+SqLite In Memory databases, and so should be able to run in the kind of time you'd expect from unit tests.
