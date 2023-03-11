@@ -47,11 +47,6 @@ internal static class Program
             await host.StartAsync();
 
             // Now start the application
-
-
-            //var app = scope.ServiceProvider.GetRequiredService<ExampleParent>();
-            //await app.Run();
-
             ApplicationConfiguration.Initialize();
             Application.Run(scope.ServiceProvider.GetRequiredService<MainForm>());
 
