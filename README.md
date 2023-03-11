@@ -46,9 +46,12 @@ data independent of the parent.
 
 - Inherit from SalusDbContext instead of DbContext
 - Apply the `[SalusSourceDbSet]` attribute to any DbSet that you want Salus to monitor
+
 2. Create a Message Sender, by creating a class which implements IAsyncMessageSender. In here, you need to add a single
 method which sends messages. You can use whatever messaging technology you like in here (the example uses RabbitMQ).
-You can add whatever routing or other instructions you need.
+You can add whatever routing or other instructions you need. The only requirement is that it must throw an exception
+if the message did not send - this is how Salus knows to retry later.
+
 3. Register with dependency injection using the following code:
 
 ```
@@ -62,7 +65,11 @@ contextOptions =>
 });
 ```
 
-4. Use like any other DbContext!
+4. After your IHost is built, be sure to call `await host.StartAsync();` -
+*this step is important* because it causes hosted services to run, including
+the service which re-tries the sending of failed messages.
+
+5. Use like any other DbContext!
 
 #### In the child
 
