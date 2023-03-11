@@ -149,11 +149,11 @@ public class DbContextSaverTests
         // Arrange
         var salus = Helpers.BuildTestSalus();
 
-        var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+        var options = new DbContextOptionsBuilder<DestNonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
             .Options;
 
-        var context = new NonGeneratedKeyContext(salus, options);
+        var context = new DestNonGeneratedKeyContext(salus, options);
 
         context.CreateDatabaseTables();
 
@@ -162,9 +162,35 @@ public class DbContextSaverTests
         context.Apply(save);
 
         // Assert
-        Assert.Equal(1, context.Ents.Count());
-        Assert.Equal("Test ID", context.Ents.Single().Id);
-        Assert.Equal("Test Name", context.Ents.Single().Name);
+        Assert.Equal(1, context.Entities.Count());
+        Assert.Equal("Test ID", context.Entities.Single().Id);
+        Assert.Equal("Test Name", context.Entities.Single().Name);
+
+        Assert.Equal(0, context.SalusSaves.Count());
+    }
+
+    [Fact]
+    public void AddApplyWithCustomNameTest()
+    {
+        // Arrange
+        var salus = Helpers.BuildTestSalus();
+
+        var options = new DbContextOptionsBuilder<DestNonGeneratedKeyContextWithNamedSet>()
+            .UseSqlite("Filename=:memory:")
+            .Options;
+
+        var context = new DestNonGeneratedKeyContextWithNamedSet(salus, options);
+
+        context.CreateDatabaseTables();
+
+        // Act
+        var save = JsonConvert.DeserializeObject<Save<int>>(ADD_JSON_CUSTOM_NAME)!;
+        context.Apply(save);
+
+        // Assert
+        Assert.Equal(1, context.Entities.Count());
+        Assert.Equal("Test ID", context.Entities.Single().Id);
+        Assert.Equal("Test Name", context.Entities.Single().Name);
 
         Assert.Equal(0, context.SalusSaves.Count());
     }
@@ -175,25 +201,25 @@ public class DbContextSaverTests
         // Arrange
         var salus = Helpers.BuildTestSalus();
 
-        var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+        var options = new DbContextOptionsBuilder<DestNonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
             .Options;
 
-        var context = new NonGeneratedKeyContext(salus, options);
+        var context = new DestNonGeneratedKeyContext(salus, options);
 
         context.CreateDatabaseTables();
 
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        context.Entities.Add(new NoKeyAnnotationStringIdEntity
         {
             Id = "Test ID 1",
             Name = "Test Name"
         });
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        context.Entities.Add(new NoKeyAnnotationStringIdEntity
         {
             Id = "Test ID 2",
             Name = "Test Name"
         });
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        context.Entities.Add(new NoKeyAnnotationStringIdEntity
         {
             Id = "Test ID 3",
             Name = "Test Name"
@@ -206,9 +232,9 @@ public class DbContextSaverTests
         context.Apply(save);
 
         // Assert
-        Assert.Equal(3, context.Ents.Count());
-        Assert.Equal("Test Name 2", context.Ents.Single(e => e.Id == "Test ID 2").Name);
-        Assert.True(context.Ents.Where(e => e.Id != "Test ID 2").All(e => e.Name == "Test Name"));
+        Assert.Equal(3, context.Entities.Count());
+        Assert.Equal("Test Name 2", context.Entities.Single(e => e.Id == "Test ID 2").Name);
+        Assert.True(context.Entities.Where(e => e.Id != "Test ID 2").All(e => e.Name == "Test Name"));
 
         Assert.Equal(0, context.SalusSaves.Count());
     }
@@ -219,25 +245,25 @@ public class DbContextSaverTests
         // Arrange
         var salus = Helpers.BuildTestSalus();
 
-        var options = new DbContextOptionsBuilder<NonGeneratedKeyContext>()
+        var options = new DbContextOptionsBuilder<DestNonGeneratedKeyContext>()
             .UseSqlite("Filename=:memory:")
             .Options;
 
-        var context = new NonGeneratedKeyContext(salus, options);
+        var context = new DestNonGeneratedKeyContext(salus, options);
 
         context.CreateDatabaseTables();
 
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        context.Entities.Add(new NoKeyAnnotationStringIdEntity
         {
             Id = "Test ID 1",
             Name = "Test Name"
         });
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        context.Entities.Add(new NoKeyAnnotationStringIdEntity
         {
             Id = "Test ID 2",
             Name = "Test Name"
         });
-        context.Ents.Add(new NoKeyAnnotationStringIdEntity
+        context.Entities.Add(new NoKeyAnnotationStringIdEntity
         {
             Id = "Test ID 3",
             Name = "Test Name"
@@ -250,8 +276,8 @@ public class DbContextSaverTests
         context.Apply(save);
 
         // Assert
-        Assert.Equal(2, context.Ents.Count());
-        Assert.True(context.Ents.All(e => e.Id != "Test ID 2"));
+        Assert.Equal(2, context.Entities.Count());
+        Assert.True(context.Entities.All(e => e.Id != "Test ID 2"));
 
         Assert.Equal(0, context.SalusSaves.Count());
     }

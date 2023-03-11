@@ -27,7 +27,7 @@ internal static class Helpers
         }
 
         var checker = new DbContextIdempotencyChecker();
-        var saver = new DbContextSaver<int>();
+        var saver = new DbContextSaver<int>(new Mock<ILogger<DbContextSaver<int>>>().Object);
         messageSenderInternal = new MessageSenderInternal<int>(options, new Mock<ILogger<MessageSenderInternal<int>>>().Object);
         var semaphoreMock = new Mock<IQueueProcessorSemaphore>();
         semaphoreMock.Setup(m => m.Start()).Returns(true);

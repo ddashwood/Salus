@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Salus.Models.Changes;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -12,6 +13,13 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
     // come from elsewhere in the system, and the Updates table only references the initial
     // change of the data, not when it is updated elsewhere
     private bool _applying;
+
+    private readonly ILogger<DbContextSaver<TKey>> _logger;
+
+    public DbContextSaver(ILogger<DbContextSaver<TKey>> logger)
+    {
+        _logger = logger;
+    }
 
     public Save<TKey>? BuildPreliminarySave(DbContext context)
     {
@@ -145,19 +153,43 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
         dbSetPropertyInfo.PropertyType.GetMethod("Remove")!.Invoke(dbSet, new object?[] { entity });
     }
 
-    private static object? GetEntityFromDatabaseWithPrimaryKey(DbContext context, ChangedRow change, out Type entityType)
+    private object? GetEntityFromDatabaseWithPrimaryKey(DbContext context, ChangedRow change, out Type entityType)
     {
         // N.b. need to create a local copy of this, because we are not allowed to use "out" parameters in
         // lambdas such as when we get the dbSetPropertyInfo below
+
         var localEntityType = entityType = Type.GetType(change.ChangeClrType)
             ?? throw new InvalidOperationException("Can't find type when applying change (insert): " + change.ChangeClrType);
 
         var dbSetPropertyInfo = context
             .GetType()
             .GetProperties()
-            .Single(p => typeof(DbSet<>)
-                            .MakeGenericType(localEntityType)
-                            .IsAssignableFrom(p.PropertyType));
+            .SingleOrDefault(p =>
+            {
+                if (!p.PropertyType.IsGenericType || p.PropertyType.GetGenericTypeDefinition() != typeof(DbSet<>))
+                {
+                    return false;
+                }
+
+                var entityType = p.PropertyType.GenericTypeArguments[0];
+
+                var attribute = p.GetCustomAttribute<SalusDestinationDbSetAttribute>();
+                if (attribute == null)
+                {
+                    return false;
+                }
+
+                var salusType = attribute.SalusName ?? entityType.Name;
+
+                return salusType == change.ChangeSalusType;
+            });
+
+        if (dbSetPropertyInfo == null)
+        {
+            _logger.LogWarning("No DbSet found in which to write data for type " + change.ChangeSalusType);
+            return null;
+        }
+
         var dbSet = dbSetPropertyInfo.GetGetMethod()!.Invoke(context, null);
         
         var method = typeof(DbContextSaver<TKey>)
@@ -190,6 +222,11 @@ internal class DbContextSaver<TKey> : IDbContextSaver<TKey>
 
     private static void ApplyFieldChanges(ChangedRow change, Type entityType, object? entity)
     {
+        if (entity == null)
+        {
+            return;
+        }
+
         foreach (var fieldData in change.UpdatedFields!)
         {
             // For now, assume that we're only working with properties
