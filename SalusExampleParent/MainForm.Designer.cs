@@ -29,48 +29,26 @@
         private void InitializeComponent()
         {
             Grid = new DataGridView();
+            AddButton = new Button();
+            RefreshButton = new Button();
             Id = new DataGridViewTextBoxColumn();
             Data1 = new DataGridViewTextBoxColumn();
             Data2 = new DataGridViewTextBoxColumn();
+            Edit = new DataGridViewButtonColumn();
             Delete = new DataGridViewButtonColumn();
-            AddButton = new Button();
-            RefreshButton = new Button();
             ((System.ComponentModel.ISupportInitialize)Grid).BeginInit();
             SuspendLayout();
             // 
             // Grid
             // 
             Grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Grid.Columns.AddRange(new DataGridViewColumn[] { Id, Data1, Data2, Delete });
+            Grid.Columns.AddRange(new DataGridViewColumn[] { Id, Data1, Data2, Edit, Delete });
             Grid.Location = new Point(12, 12);
             Grid.Name = "Grid";
             Grid.RowTemplate.Height = 25;
             Grid.Size = new Size(776, 392);
             Grid.TabIndex = 0;
             Grid.CellContentClick += Grid_CellContentClick;
-            // 
-            // Id
-            // 
-            Id.HeaderText = "Id";
-            Id.Name = "Id";
-            Id.ReadOnly = true;
-            // 
-            // Data1
-            // 
-            Data1.HeaderText = "Data 1";
-            Data1.Name = "Data1";
-            Data1.ReadOnly = true;
-            // 
-            // Data2
-            // 
-            Data2.HeaderText = "Data 2 (child does not import this)";
-            Data2.Name = "Data2";
-            Data2.ReadOnly = true;
-            // 
-            // Delete
-            // 
-            Delete.HeaderText = "Delete";
-            Delete.Name = "Delete";
             // 
             // AddButton
             // 
@@ -92,6 +70,34 @@
             RefreshButton.UseVisualStyleBackColor = true;
             RefreshButton.Click += RefreshButton_Click;
             // 
+            // Id
+            // 
+            Id.HeaderText = "Id";
+            Id.Name = "Id";
+            Id.ReadOnly = true;
+            // 
+            // Data1
+            // 
+            Data1.HeaderText = "Data 1";
+            Data1.Name = "Data1";
+            Data1.ReadOnly = true;
+            // 
+            // Data2
+            // 
+            Data2.HeaderText = "Data 2 (child does not import this)";
+            Data2.Name = "Data2";
+            Data2.ReadOnly = true;
+            // 
+            // Edit
+            // 
+            Edit.HeaderText = "Edit";
+            Edit.Name = "Edit";
+            // 
+            // Delete
+            // 
+            Delete.HeaderText = "Delete";
+            Delete.Name = "Delete";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -110,11 +116,12 @@
         #endregion
 
         private DataGridView Grid;
+        private Button AddButton;
+        private Button RefreshButton;
         private DataGridViewTextBoxColumn Id;
         private DataGridViewTextBoxColumn Data1;
         private DataGridViewTextBoxColumn Data2;
+        private DataGridViewButtonColumn Edit;
         private DataGridViewButtonColumn Delete;
-        private Button AddButton;
-        private Button RefreshButton;
     }
 }

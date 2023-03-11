@@ -1,13 +1,22 @@
 ﻿namespace SalusExampleParent;
 
-public partial class AddForm : Form
+public partial class AddEditForm : Form
 {
     public bool Save { get; private set; }
 
-    public string Data1 => Data1Textbox.Text;
-    public string Data2 => Data2TextBox.Text;
+    public string Data1
+    {
+        get => Data1TextBox.Text;
+        set => Data1TextBox.Text = value;
+    }
 
-    public AddForm()
+    public string Data2
+    {
+        get => Data2TextBox.Text;
+        set => Data2TextBox.Text = value;
+    }
+
+    public AddEditForm()
     {
         InitializeComponent();
     }

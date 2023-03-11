@@ -1,6 +1,6 @@
 ﻿namespace SalusExampleParent
 {
-    partial class AddForm
+    partial class AddEditForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Data1Textbox = new TextBox();
+            Data1TextBox = new TextBox();
             Data2TextBox = new TextBox();
             label1 = new Label();
             label2 = new Label();
@@ -39,11 +39,11 @@
             // 
             // Data1Textbox
             // 
-            Data1Textbox.Location = new Point(148, 12);
-            Data1Textbox.Multiline = true;
-            Data1Textbox.Name = "Data1Textbox";
-            Data1Textbox.Size = new Size(640, 162);
-            Data1Textbox.TabIndex = 0;
+            Data1TextBox.Location = new Point(148, 12);
+            Data1TextBox.Multiline = true;
+            Data1TextBox.Name = "Data1Textbox";
+            Data1TextBox.Size = new Size(640, 162);
+            Data1TextBox.TabIndex = 0;
             // 
             // Data2TextBox
             // 
@@ -111,7 +111,7 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(Data2TextBox);
-            Controls.Add(Data1Textbox);
+            Controls.Add(Data1TextBox);
             Name = "AddForm";
             Text = "AddForm";
             ResumeLayout(false);
@@ -120,7 +120,7 @@
 
         #endregion
 
-        private TextBox Data1Textbox;
+        private TextBox Data1TextBox;
         private TextBox Data2TextBox;
         private Label label1;
         private Label label2;

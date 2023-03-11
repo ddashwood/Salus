@@ -45,6 +45,9 @@ public class ExampleChild
         var data = _context.ExampleData.ToList();
 
         Console.WriteLine($"Got {data.Count} rows of data!");
+        Console.WriteLine();
+        Console.WriteLine();
+
         foreach (var row in data)
         {
             Console.WriteLine("Id: " + row.Id);
