@@ -51,7 +51,7 @@ method which sends messages. You can use whatever messaging technology you like 
 You can add whatever routing or other instructions you need.
 3. Register with dependency injection using the following code:
 
-```
+```csharp
 services.AddSalus<MyContext>(new MessageSender(), salusOptions => 
 {
     // There are a variety of options you can put here - see demo for examples
@@ -72,7 +72,7 @@ contextOptions =>
 - Apply the `[SalusDestinationDbSet]` attribute to any DbSet that you want Salus to write to
 2. Register with dependency injection using the following code:
 
-```
+```csharp
 services.AddSalus<MyContext>(salusOptions => 
 {
     // Probably not needed if you are only receiving Salus data, not sending
@@ -85,7 +85,7 @@ contextOptions =>
 
 3. Add whatever code you need to receive messages from your messaging system. When you receive a message, call:
 
-```
+```csharp
 context.Apply(message);
 ```
 
