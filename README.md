@@ -1,7 +1,7 @@
 # Salus
-## Guarantee eventual consistency using Entity Framework in Microservices 
+## Helps achieve eventual consistency using Entity Framework in Microservices 
 
-Named after the Roman goddess of safety and well-being, Salus ensures the safety
+Named after the Roman goddess of safety and well-being, Salus aids with the safety
 and well-being of your data in your Microservices-based system.
 
 ### *Status*
