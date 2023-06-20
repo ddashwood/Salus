@@ -125,3 +125,13 @@ see if this works
 There is a test project attached to the solution. The tests are generally of the form of integration tests, rather than unit tests,
 because testing the code in Salus is pointless unless the way it integrates with Entity Framework is as expected. Tests use 
 SqLite In Memory databases, and so should be able to run in the kind of time you'd expect from unit tests.
+
+### To Do
+
+- Check Salus can handle unknown tables correctly
+- Check Salus can handle unknown fields correctly
+- Check Salus can handle updates/deletes with unknown primary key correctly
+- Check that auto-set primary keys are handled correctly
+- Ensure RemoveRange works correctly
+- Ensure related entities are navigated and handled correclty
+- Ensure many-to-many related entities are navigated and handled correctly
